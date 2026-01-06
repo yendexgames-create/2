@@ -1,0 +1,83 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Testlar</h1>
+
+      <div class="tests-layout">
+        <div class="tests-list card">
+          <h2 class="tests-list-title">Testlar ro'yxati</h2>
+          <p class="tests-list-desc">Quyidagi testlardan birini tanlab, PDF bilan birga onlayn yeching.</p>
+          <div class="tests-cards">
+            <% if (tests && tests.length) { %>
+              <% tests.forEach(function(t, idx){ %>
+                <button
+                  class="test-card-btn"
+                  data-test-id="<%= t._id %>"
+                  data-test-title="<%= t.title %>"
+                >
+                  <div class="test-card-rank">#<%= idx + 1 %></div>
+                  <div class="test-card-main">
+                    <div class="test-card-title"><%= t.title %></div>
+                    <div class="test-card-meta">
+                      <% if (typeof t.totalQuestions !== 'undefined' && t.totalQuestions !== null) { %>
+                        <span><%= t.totalQuestions %> ta savol</span>
+                      <% } %>
+                    </div>
+                  </div>
+                </button>
+              <% }); %>
+            <% } else { %>
+              <p class="tests-empty">Hozircha testlar qo'shilmagan.</p>
+            <% } %>
+          </div>
+        </div>
+
+        <div id="testContainer" class="card test-container hidden">
+          <div class="test-header">
+            <div>
+              <div id="testTitle" class="test-title"></div>
+              <div id="testMeta" class="test-meta"></div>
+            </div>
+            <div class="progress-bar-wrapper">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+          </div>
+
+          <div class="test-body">
+            <div class="test-pdf">
+              <div class="test-pdf-inner">
+                <iframe id="testPdfFrame" src="" frameborder="0"></iframe>
+              </div>
+              <p class="test-pdf-hint">PDF ichida savollar matnini ko'rib, pastdagi raqamlar orqali javob variantlarini tanlang.</p>
+            </div>
+
+            <div class="test-questions-panel">
+              <div id="questionBadges" class="test-question-badges"></div>
+              <div id="answerControls" class="test-answer-controls hidden">
+                <div class="answer-buttons">
+                  <button data-answer="A" class="answer-btn">A</button>
+                  <button data-answer="B" class="answer-btn">B</button>
+                  <button data-answer="C" class="answer-btn">C</button>
+                  <button data-answer="D" class="answer-btn">D</button>
+                </div>
+                <div class="answer-info" id="answerInfo"></div>
+              </div>
+              <button id="submitTestBtn" class="btn-primary test-submit-btn">Yakunlash</button>
+              <div id="testResult" class="test-result"></div>
+              <div id="testVideoWrapper" class="test-video-wrapper hidden">
+                <h3>Tabriklaymiz! Siz testni muvaffaqiyatli topshirdingiz.</h3>
+                <p>Quyidagi videoni tomosha qilib, mavzuni yanada mustahkamlab oling.</p>
+                <div class="test-video-embed">
+                  <iframe id="testVideoFrame" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>
