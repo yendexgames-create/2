@@ -4,9 +4,71 @@ const Result = require('../models/Result');
 exports.getTestPage = async (req, res) => {
   try {
     const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount');
-    res.render('tests/test-page', { title: 'Testlar  Math Club', tests });
+    res.render('tests/test-page', { title: 'Testlar — Math Club', tests });
   } catch (err) {
     console.error('Test sahifa xatosi:', err.message);
+    res.status(500).send('Server xatosi');
+  }
+};
+
+// Bitta testni yechish sahifasi
+exports.getTestSolvePage = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id).select(
+      'title pdfLink totalQuestions closedCount openCount videoLink'
+    );
+    if (!test) {
+      return res.status(404).render('tests/solve', {
+        title: 'Test topilmadi',
+        test: null,
+        error: 'Bu test topilmadi yoki o‘chirilgan.'
+      });
+    }
+
+    res.render('tests/solve', {
+      title: test.title + ' — Testni yechish',
+      test,
+      error: null
+    });
+  } catch (err) {
+    console.error('Testni yuklash xatosi:', err.message);
+    res.status(500).send('Server xatosi');
+  }
+};
+
+// Test natijasi sahifasi (so‘nggi natija bo‘yicha)
+exports.getTestResultPage = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id).select(
+      'title pdfLink totalQuestions closedCount openCount videoLink'
+    );
+    if (!test) {
+      return res.status(404).render('tests/result', {
+        title: 'Test topilmadi',
+        test: null,
+        result: null,
+        passed: false
+      });
+    }
+
+    const lastResult = await Result.findOne({
+      userId: req.user._id,
+      testId: test._id
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const score = lastResult ? lastResult.score : null;
+    const passed = typeof score === 'number' ? score >= 50 : false;
+
+    res.render('tests/result', {
+      title: test.title + ' — Natija',
+      test,
+      result: lastResult,
+      passed
+    });
+  } catch (err) {
+    console.error('Test natijasi sahifa xatosi:', err.message);
     res.status(500).send('Server xatosi');
   }
 };

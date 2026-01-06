@@ -1,0 +1,176 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <% if (!test) { %>
+        <h1 class="section-title">Test topilmadi</h1>
+        <p class="tests-empty"><%= error || 'Bu test topilmadi yoki o‘chirilgan.' %></p>
+      <% } else { %>
+        <h1 class="section-title"><%= test.title %></h1>
+        <div class="tests-layout">
+          <div class="card test-container">
+            <div class="test-header">
+              <div>
+                <div class="test-title"><%= test.title %></div>
+                <div class="test-meta">
+                  <% if (typeof test.totalQuestions !== 'undefined' && test.totalQuestions !== null) { %>
+                    <span><%= test.totalQuestions %> ta savol
+                      <% if (typeof test.closedCount !== 'undefined' && test.closedCount !== null) { %>
+                        · <%= test.closedCount %> ta yopiq (A/B/C/D) savol
+                      <% } %>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+              <div class="progress-bar-wrapper">
+                <div id="progressBar" class="progress-bar"></div>
+              </div>
+            </div>
+
+            <div class="test-body">
+              <div class="test-pdf">
+                <div class="test-pdf-inner">
+                  <% if (test.pdfLink) { %>
+                    <iframe id="testPdfFrame" src="<%= test.pdfLink %>" frameborder="0"></iframe>
+                  <% } %>
+                </div>
+                <p class="test-pdf-hint">PDF ichida savollar matnini ko‘rib, pastdagi raqamlar orqali yopiq savollar (A/B/C/D) javoblarini tanlang.</p>
+              </div>
+
+              <div class="test-questions-panel">
+                <div id="questionBadges" class="test-question-badges"></div>
+                <div id="answerControls" class="test-answer-controls hidden">
+                  <div class="answer-buttons">
+                    <button data-answer="A" class="answer-btn">A</button>
+                    <button data-answer="B" class="answer-btn">B</button>
+                    <button data-answer="C" class="answer-btn">C</button>
+                    <button data-answer="D" class="answer-btn">D</button>
+                  </div>
+                  <div class="answer-info" id="answerInfo"></div>
+                </div>
+                <button id="submitTestBtn" class="btn-primary test-submit-btn">Yakunlash</button>
+                <div id="testResult" class="test-result"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>
+
+<% if (test) { %>
+<script>
+  (function () {
+    const progressBar = document.getElementById('progressBar');
+    const questionBadges = document.getElementById('questionBadges');
+    const answerControls = document.getElementById('answerControls');
+    const answerButtons = answerControls ? answerControls.querySelectorAll('.answer-btn') : [];
+    const answerInfo = document.getElementById('answerInfo');
+    const submitBtn = document.getElementById('submitTestBtn');
+    const testResult = document.getElementById('testResult');
+
+    const testId = '<%= test._id %>';
+    const closedCount = Number(<%= typeof test.closedCount !== 'undefined' && test.closedCount !== null ? test.closedCount : 0 %>);
+
+    let currentAnswers = new Array(closedCount > 0 ? closedCount : 0).fill('');
+    let currentIndex = 0;
+
+    function updateProgress(current, total) {
+      if (!progressBar) return;
+      const percent = total ? (current / total) * 100 : 0;
+      progressBar.style.width = percent + '%';
+    }
+
+    function setCurrentIndex(idx) {
+      currentIndex = idx;
+      if (!questionBadges || !answerControls) return;
+      const badges = questionBadges.querySelectorAll('.question-badge');
+      badges.forEach((b) => {
+        b.classList.toggle('active', Number(b.dataset.index) === idx);
+        const ans = currentAnswers[Number(b.dataset.index)] || '';
+        b.classList.toggle('answered', !!ans);
+      });
+      answerControls.classList.remove('hidden');
+      const currentAns = currentAnswers[idx] || '';
+      if (answerButtons && answerButtons.length) {
+        answerButtons.forEach((btn) => {
+          btn.classList.toggle('selected', btn.getAttribute('data-answer') === currentAns);
+        });
+      }
+      if (answerInfo) {
+        answerInfo.textContent = (idx + 1) + "-savol uchun A/B/C/D variantidan birini tanlang.";
+      }
+    }
+
+    function renderBadges(count) {
+      if (!questionBadges) return;
+      questionBadges.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'question-badge';
+        btn.textContent = i + 1;
+        btn.dataset.index = i;
+        btn.addEventListener('click', function () {
+          setCurrentIndex(i);
+        });
+        questionBadges.appendChild(btn);
+      }
+      if (count > 0) {
+        setCurrentIndex(0);
+      }
+    }
+
+    if (closedCount > 0) {
+      renderBadges(closedCount);
+      updateProgress(0, closedCount);
+    } else if (testResult) {
+      testResult.textContent = 'Bu test uchun yopiq (A/B/C/D) savollar sozlanmagan.';
+    }
+
+    if (answerButtons && answerButtons.length) {
+      answerButtons.forEach((btn) => {
+        btn.addEventListener('click', function () {
+          const val = btn.getAttribute('data-answer');
+          if (!val) return;
+          currentAnswers[currentIndex] = val;
+          setCurrentIndex(currentIndex);
+          const answeredCount = currentAnswers.filter((a) => !!a).length;
+          updateProgress(answeredCount, closedCount);
+        });
+      });
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', async function () {
+        if (!testId || !closedCount) return;
+        try {
+          const res = await fetch('/tests/api/' + testId + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers: currentAnswers })
+          });
+          if (res.status === 401) {
+            alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
+            window.location.href = '/auth/login';
+            return;
+          }
+          const data = await res.json();
+          if (testResult) {
+            testResult.textContent = 'Natija: ' + data.score + '% (' + data.correct + '/' + data.totalClosed + ' to‘g‘ri yopiq savol)';
+          }
+          if (data && typeof data.score === 'number') {
+            window.setTimeout(function () {
+              window.location.href = '/tests/' + testId + '/result';
+            }, 500);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
+  })();
+</script>
+<% } %>

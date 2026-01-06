@@ -1,0 +1,72 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <% if (!test) { %>
+        <h1 class="section-title">Test topilmadi</h1>
+        <p class="tests-empty">Bu test topilmadi yoki o‘chirilgan.</p>
+      <% } else { %>
+        <h1 class="section-title"><%= test.title %> — Natija</h1>
+
+        <div class="tests-layout">
+          <div class="card">
+            <div class="test-header">
+              <div>
+                <div class="test-title"><%= test.title %></div>
+                <div class="test-meta">
+                  <% if (typeof test.totalQuestions !== 'undefined' && test.totalQuestions !== null) { %>
+                    <span><%= test.totalQuestions %> ta savol
+                      <% if (typeof test.closedCount !== 'undefined' && test.closedCount !== null) { %>
+                        · <%= test.closedCount %> ta yopiq (A/B/C/D) savol
+                      <% } %>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+
+            <div class="test-result-block">
+              <% if (!result) { %>
+                <p class="tests-empty">Bu test bo‘yicha hali natija topilmadi.</p>
+              <% } else { %>
+                <div class="result-summary">
+                  <div class="result-score-main"><%= result.score %>%</div>
+                  <div class="result-score-label">Sizning natijangiz</div>
+                  <div class="result-score-meta">
+                    Yakunlangan sana: <%= new Date(result.createdAt).toLocaleString('uz-UZ') %>
+                  </div>
+                </div>
+
+                <% if (passed) { %>
+                  <div class="test-video-wrapper">
+                    <h3>Tabriklaymiz! Siz testni muvaffaqiyatli topshirdingiz.</h3>
+                    <% if (test.videoLink) { %>
+                      <p>Quyidagi videoni tomosha qilib, mavzuni yanada mustahkamlab oling.</p>
+                      <div class="test-video-embed">
+                        <iframe src="<%= test.videoLink %>" frameborder="0" allowfullscreen></iframe>
+                      </div>
+                    <% } else { %>
+                      <p>Bu test uchun hozircha video biriktirilmagan.</p>
+                    <% } %>
+                  </div>
+                <% } else { %>
+                  <div class="test-fail-block">
+                    <h3>Bu safar yetarli bo‘lmadi 😅</h3>
+                    <p>Yana bir bor urinib ko‘ring yoki boshqa testni tanlang. Muntazam mashq qilsangiz, albatta natija bo‘ladi.</p>
+                  </div>
+                <% } %>
+              <% } %>
+
+              <div class="result-actions">
+                <a href="/tests/<%= test._id %>" class="btn-outline">Testni qayta yechish</a>
+                <a href="/tests" class="btn-primary">Boshqa testlarni ko‘rish</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>
