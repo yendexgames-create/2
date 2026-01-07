@@ -39,20 +39,47 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
-    // Maxsus admin login: faqat login so'zi bilan (email kiritmasdan) admin panelga kirish
+    // Maxsus admin login: ikki bosqichli oqim
+    // 1-bosqich: email bo'sh, parol ADMIN_LOGIN_PASSWORD ga teng bo'lsa -> login so'zini so'raymiz
+    // 2-bosqich: email bo'sh, sessiyada adminStage='step1' va parol ADMIN_LOGIN ga teng bo'lsa -> admin panelga kiritamiz
+    const adminPassword = process.env.ADMIN_LOGIN_PASSWORD;
     const adminLogin = process.env.ADMIN_LOGIN;
+
     if (!email || email.trim() === '') {
-      if (adminLogin && password === adminLogin) {
-        if (req.session) {
+      // 2-bosqich: login so'zini tekshirish
+      if (req.session && req.session.adminStage === 'step1') {
+        if (adminLogin && password === adminLogin) {
           req.session.isAdmin = true;
+          req.session.adminStage = null;
+          return res.redirect('/admin');
         }
-        return res.redirect('/admin');
+
+        req.session.adminStage = null;
+        return res.render('auth/login', {
+          title: 'Kirish — Math Club',
+          error: 'Admin login so‘zi noto‘g‘ri.'
+        });
+      }
+
+      // 1-bosqich: maxsus admin parolni tekshirish
+      if (adminPassword && password === adminPassword) {
+        if (req.session) {
+          req.session.adminStage = 'step1';
+        }
+        return res.render('auth/login', {
+          title: 'Kirish — Math Club',
+          error: 'Endi admin login so‘zingizni kiriting.'
+        });
       }
 
       return res.render('auth/login', {
         title: 'Kirish — Math Club',
-        error: 'Admin sifatida kirish uchun maxsus login so‘zi noto‘g‘ri. Oddiy foydalanuvchi sifatida kirish uchun email va parolni to‘liq kiriting.'
+        error: 'Email yoki parol noto‘g‘ri.'
       });
+    }
+
+    if (req.session) {
+      req.session.adminStage = null;
     }
 
     const user = await User.findOne({ email });
