@@ -1,0 +1,72 @@
+<%- include('./partials/head') %>
+<%- include('./partials/navbar') %>
+
+<main class="page">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Yetakchilar</h1>
+
+      <% if (currentUserEntry) { %>
+        <div class="lb-current-card">
+          <div class="lb-current-left">
+            <div class="lb-avatar-wrap lb-rank-<%= currentUserEntry.rank <= 3 ? currentUserEntry.rank : 'default' %>">
+              <div class="lb-avatar-circle">
+                <% if (currentUserEntry.avatar) { %>
+                  <img src="<%= currentUserEntry.avatar %>" alt="avatar" />
+                <% } else { %>
+                  <span><%= currentUserEntry.name ? currentUserEntry.name.charAt(0).toUpperCase() : 'M' %></span>
+                <% } %>
+              </div>
+              <% if (currentUserEntry.rank <= 3) { %>
+                <span class="lb-crown-badge lb-crown-<%= currentUserEntry.rank %>"></span>
+              <% } %>
+            </div>
+            <div>
+              <div class="lb-name"><%= currentUserEntry.name %></div>
+              <div class="lb-meta">Sizning o'rningiz: <strong><%= currentUserEntry.rank %>-o'rin</strong></div>
+              <div class="lb-meta">Yechilgan testlar: <%= currentUserEntry.testsCount %> ta</div>
+            </div>
+          </div>
+          <div class="lb-current-right">
+            <div class="lb-liquid-ring" style="--percent:<%= currentUserEntry.avgScore %>;"><div class="lb-liquid-fill"></div><div class="lb-liquid-label"><%= currentUserEntry.avgScore %>%</div></div>
+            <div class="lb-meta">O'rtacha aniqlik</div>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (!leaderboard || !leaderboard.length) { %>
+        <div class="admin-placeholder">Hozircha yetakchilar ro'yxati uchun test natijalari mavjud emas.</div>
+      <% } else { %>
+        <div class="lb-grid">
+          <% leaderboard.forEach(function(item) { %>
+            <a href="/leaderboard/user/<%= item.userId %>" class="lb-card lb-rank-<%= item.rank <= 3 ? item.rank : 'default' %>">
+              <div class="lb-rank">#<%= item.rank %></div>
+              <div class="lb-card-main">
+                <div class="lb-avatar-wrap">
+                  <div class="lb-avatar-circle">
+                    <% if (item.avatar) { %>
+                      <img src="<%= item.avatar %>" alt="avatar" />
+                    <% } else { %>
+                      <span><%= item.name ? item.name.charAt(0).toUpperCase() : 'M' %></span>
+                    <% } %>
+                  </div>
+                  <% if (item.rank <= 3) { %>
+                    <span class="lb-crown-badge lb-crown-<%= item.rank %>"></span>
+                  <% } %>
+                </div>
+                <div class="lb-info">
+                  <div class="lb-name"><%= item.name %></div>
+                  <div class="lb-meta">Yechilgan testlar: <%= item.testsCount %> ta</div>
+                </div>
+                <div class="lb-score">
+                  <div class="lb-liquid-ring" style="--percent:<%= item.avgScore %>;"><div class="lb-liquid-fill"></div><div class="lb-liquid-label"><%= item.avgScore %>%</div></div>
+                  <div class="lb-meta">Aniqlik</div>
+                </div>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>

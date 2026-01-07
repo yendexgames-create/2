@@ -1,0 +1,271 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+<main class="page tests-solve-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <% if (!test) { %>
+        <h1 class="section-title">Test topilmadi</h1>
+        <p class="tests-empty"><%= error || 'Bu test topilmadi yoki o‘chirilgan.' %></p>
+      <% } else { %>
+        <h1 class="section-title"><%= test.title %></h1>
+        <div class="tests-layout">
+          <div class="card test-container">
+            <div class="test-header">
+              <div>
+                <div class="test-title"><%= test.title %></div>
+                <div class="test-meta">
+                  <% if (typeof test.totalQuestions !== 'undefined' && test.totalQuestions !== null) { %>
+                    <span><%= test.totalQuestions %> ta savol
+                      <% if (typeof test.displayClosedCount !== 'undefined' && test.displayClosedCount !== null && test.displayClosedCount > 0) { %>
+                        · <%= test.displayClosedCount %> ta yopiq (A/B/C/D) savol
+                      <% } %>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+              <div class="progress-bar-wrapper">
+                <div id="progressBar" class="progress-bar"></div>
+              </div>
+            </div>
+
+            <div class="test-body">
+              <div class="test-pdf">
+                <div class="test-pdf-inner">
+                  <% if (test.pdfLink) { %>
+                    <iframe id="testPdfFrame" src="<%= test.pdfLink %>" frameborder="0"></iframe>
+                  <% } %>
+                </div>
+                <p class="test-pdf-hint">PDF ichida savollar matnini ko‘rib, pastdagi raqamlar orqali yopiq savollar (A/B/C/D) javoblarini tanlang.</p>
+              </div>
+
+              <div class="test-questions-panel">
+                <div id="questionBadges" class="test-question-badges"></div>
+                <div id="answerControls" class="test-answer-controls hidden">
+                  <div class="answer-buttons">
+                    <button data-answer="A" class="answer-btn">A</button>
+                    <button data-answer="B" class="answer-btn">B</button>
+                    <button data-answer="C" class="answer-btn">C</button>
+                    <button data-answer="D" class="answer-btn">D</button>
+                  </div>
+                  <div class="answer-info" id="answerInfo"></div>
+                </div>
+                <div id="openQuestionsPanel" class="open-questions-panel hidden"></div>
+                <button id="submitTestBtn" class="btn-primary test-submit-btn">Yakunlash</button>
+                <div id="testResult" class="test-result"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>
+
+<% if (test) { %>
+<script>
+  (function () {
+    const progressBar = document.getElementById('progressBar');
+    const questionBadges = document.getElementById('questionBadges');
+    const answerControls = document.getElementById('answerControls');
+    const answerButtons = answerControls ? answerControls.querySelectorAll('.answer-btn') : [];
+    const answerInfo = document.getElementById('answerInfo');
+    const submitBtn = document.getElementById('submitTestBtn');
+    const testResult = document.getElementById('testResult');
+    const openQuestionsPanel = document.getElementById('openQuestionsPanel');
+
+    const testId = '<%= test._id %>';
+    const closedCount = Number('<%= (typeof test.displayClosedCount !== "undefined" && test.displayClosedCount !== null) ? test.displayClosedCount : 0 %>') || 0;
+    const totalQuestions = Number('<%= (typeof test.totalQuestions !== "undefined" && test.totalQuestions !== null) ? test.totalQuestions : 0 %>') || 0;
+    const openCount = Math.max(totalQuestions - closedCount, 0);
+
+    let currentAnswers = new Array(closedCount > 0 ? closedCount : 0).fill('');
+    let currentIndex = 0;
+
+    function updateProgress(current, total) {
+      if (!progressBar) return;
+      const percent = total ? (current / total) * 100 : 0;
+      progressBar.style.width = percent + '%';
+    }
+
+    function setCurrentIndex(idx) {
+      currentIndex = idx;
+      if (!questionBadges || !answerControls) return;
+      const badges = questionBadges.querySelectorAll('.question-badge');
+      badges.forEach((b) => {
+        b.classList.toggle('active', Number(b.dataset.index) === idx);
+        const ans = currentAnswers[Number(b.dataset.index)] || '';
+        b.classList.toggle('answered', !!ans);
+      });
+      answerControls.classList.remove('hidden');
+      if (openQuestionsPanel) {
+        // Yopiq savol tanlanganda ochiq savollar panelini yashirib qo'yamiz
+        openQuestionsPanel.classList.add('hidden');
+        const items = openQuestionsPanel.querySelectorAll('.open-question-item');
+        items.forEach((it) => it.classList.remove('open-active'));
+      }
+      const currentAns = currentAnswers[idx] || '';
+      if (answerButtons && answerButtons.length) {
+        answerButtons.forEach((btn) => {
+          btn.classList.toggle('selected', btn.getAttribute('data-answer') === currentAns);
+        });
+      }
+      if (answerInfo) {
+        answerInfo.textContent = (idx + 1) + "-savol uchun A/B/C/D variantidan birini tanlang.";
+      }
+    }
+
+    function focusOpenQuestion(globalIndex) {
+      if (!openQuestionsPanel) return;
+      if (questionBadges) {
+        const badges = questionBadges.querySelectorAll('.question-badge');
+        badges.forEach((b) => {
+          b.classList.toggle('active', Number(b.dataset.index) === globalIndex);
+          const idx = Number(b.dataset.index) || 0;
+          const ans = currentAnswers[idx] || '';
+          b.classList.toggle('answered', !!ans);
+        });
+      }
+      const items = openQuestionsPanel.querySelectorAll('.open-question-item');
+      items.forEach((it) => it.classList.remove('open-active'));
+      const target = openQuestionsPanel.querySelector('[data-open-index="' + String(globalIndex) + '"]');
+      if (target) {
+        openQuestionsPanel.classList.remove('hidden');
+        target.classList.add('open-active');
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      if (answerControls) {
+        answerControls.classList.add('hidden');
+      }
+      if (answerInfo) {
+        answerInfo.textContent = (globalIndex + 1) + "-savol (ochiq) uchun yozma javobingiz:";
+      }
+    }
+
+    function renderBadges(total, closedTotal) {
+      if (!questionBadges) return;
+      questionBadges.innerHTML = '';
+      for (let i = 0; i < total; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'question-badge';
+        btn.textContent = i + 1;
+        btn.dataset.index = i;
+        btn.addEventListener('click', function () {
+          const idx = i;
+          if (idx < closedTotal) {
+            setCurrentIndex(idx);
+          } else {
+            focusOpenQuestion(idx);
+          }
+        });
+        questionBadges.appendChild(btn);
+      }
+      if (closedTotal > 0) {
+        setCurrentIndex(0);
+      }
+    }
+
+    function renderOpenQuestions(count) {
+      if (!openQuestionsPanel) return;
+      openQuestionsPanel.innerHTML = '';
+      if (!count) {
+        openQuestionsPanel.classList.add('hidden');
+        return;
+      }
+      for (let i = 0; i < count; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'open-question-item';
+        const globalIndex = closedCount + i; // 0-based index for umumiy savollar
+        wrapper.dataset.openIndex = String(globalIndex);
+        const label = document.createElement('div');
+        label.className = 'open-question-label';
+        label.textContent = (globalIndex + 1) + "-savol (ochiq) uchun yozma javobingiz:";
+        const textarea = document.createElement('textarea');
+        textarea.className = 'open-question-input';
+        textarea.rows = 2;
+        wrapper.appendChild(label);
+        wrapper.appendChild(textarea);
+        openQuestionsPanel.appendChild(wrapper);
+      }
+    }
+
+    if (closedCount > 0) {
+      renderBadges(totalQuestions || closedCount, closedCount);
+      updateProgress(0, closedCount);
+    } else if (testResult) {
+      testResult.textContent = 'Bu test uchun yopiq (A/B/C/D) savollar sozlanmagan.';
+    }
+
+    // Ochiq savollar uchun faqat yozish maydoni (ball hisoblashsiz)
+    if (openCount > 0) {
+      renderOpenQuestions(openCount);
+    }
+
+    if (answerButtons && answerButtons.length) {
+      answerButtons.forEach((btn) => {
+        btn.addEventListener('click', function () {
+          const val = btn.getAttribute('data-answer');
+          if (!val) return;
+          currentAnswers[currentIndex] = val;
+          // Joriy yopiq savol uchun holatni yangilaymiz, lekin indeksni o'zgartirmaymiz
+          if (questionBadges) {
+            const badges = questionBadges.querySelectorAll('.question-badge');
+            badges.forEach((b) => {
+              const idx = Number(b.dataset.index) || 0;
+              const ans = currentAnswers[idx] || '';
+              b.classList.toggle('answered', !!ans);
+            });
+          }
+          if (answerButtons && answerButtons.length) {
+            answerButtons.forEach((b) => {
+              b.classList.toggle('selected', b === btn);
+            });
+          }
+          const answeredCount = currentAnswers.filter((a) => !!a).length;
+          updateProgress(answeredCount, closedCount);
+        });
+      });
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', async function () {
+        if (!testId || !closedCount) return;
+        try {
+          // Ochiq savollar javoblarini yig'amiz
+          let openAnswers = [];
+          if (openCount > 0 && openQuestionsPanel) {
+            const items = openQuestionsPanel.querySelectorAll('.open-question-item');
+            items.forEach(function (item) {
+              const textarea = item.querySelector('.open-question-input');
+              const val = textarea && textarea.value ? textarea.value.toString().trim() : '';
+              openAnswers.push(val);
+            });
+          }
+
+          const res = await fetch('/tests/api/' + testId + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers: currentAnswers, openAnswers: openAnswers })
+          });
+          if (res.status === 401) {
+            alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
+            window.location.href = '/auth/login';
+            return;
+          }
+          const data = await res.json();
+          if (testResult) {
+            testResult.textContent = 'Natija: ' + data.score + '% (' + data.correct + '/' + data.totalClosed + ' to‘g‘ri yopiq savol)';
+          }
+          if (data && typeof data.score === 'number') {
+            window.setTimeout(function () {
+              window.location.href = '/tests/' + testId + '/result';
+            }, 500);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
+  })();
+</script>
+<% } %>

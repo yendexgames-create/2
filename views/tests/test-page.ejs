@@ -1,0 +1,47 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+<main class="page tests-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Testlar</h1>
+      <div class="tests-layout">
+        <div class="tests-list card">
+          <h2 class="tests-list-title">Testlar ro'yxati</h2>
+          <p class="tests-list-desc">Quyidagi testlardan birini tanlab, PDF bilan birga onlayn yeching.</p>
+          <div class="tests-cards">
+            <% if (tests && tests.length) { %>
+              <% tests.forEach(function(t, idx){ %>
+                <% var score = (typeof userScoresByTest !== 'undefined' && userScoresByTest && userScoresByTest[String(t._id)]) || null; %>
+                <a href="/tests/<%= t._id %>" class="test-card-btn">
+                  <div class="test-card-rank">#<%= idx + 1 %></div>
+                  <div class="test-card-main">
+                    <div class="test-card-title"><%= t.title %></div>
+                    <div class="test-card-meta">
+                      <% if (typeof t.totalQuestions !== 'undefined' && t.totalQuestions !== null) { %>
+                        <span><%= t.totalQuestions %> ta savol
+                          <% if (typeof t.closedCount !== 'undefined' && t.closedCount !== null) { %>
+                            · <%= t.closedCount %> ta yopiq (A/B/C/D) savol
+                          <% } %>
+                        </span>
+                      <% } %>
+                    </div>
+                  </div>
+                  <% if (score !== null && typeof score !== 'undefined') { %>
+                    <div class="tests-score-pill">
+                      <div class="lb-liquid-ring tests-liquid-ring" style="--percent:<%= score %>;"><div class="lb-liquid-fill"></div><div class="lb-liquid-label"><%= score %>%</div></div>
+                    </div>
+                  <% } else { %>
+                    <div class="tests-score-pill tests-score-pill-empty">Yangi</div>
+                  <% } %>
+                </a>
+              <% }); %>
+            <% } else { %>
+              <p class="tests-empty">Hozircha testlar qo'shilmagan.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

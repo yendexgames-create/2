@@ -1,0 +1,43 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner profile-grid">
+      <% const currentUser = (typeof user !== 'undefined' && user) ? user : (typeof locals !== 'undefined' && locals.user ? locals.user : null); %>
+      <div class="card profile-card">
+        <h1 class="section-title">Shaxsiy kabinet</h1>
+        <% if (currentUser) { %>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div class="avatar-circle" style="width:48px;height:48px;">
+              <% if (currentUser.avatar) { %>
+                <img src="<%= currentUser.avatar %>" alt="avatar" />
+              <% } else { %>
+                <span><%= currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'M' %></span>
+              <% } %>
+            </div>
+            <div style="font-size:14px;color:#56756a;">
+              Google yoki email orqali kirgan profilingiz.
+            </div>
+          </div>
+        <% } %>
+        <p><strong>Ism:</strong> <%= currentUser ? currentUser.name : '' %></p>
+        <p><strong>Email:</strong> <%= currentUser ? currentUser.email : '' %></p>
+      </div>
+      <div class="card">
+        <h2>Test natijalari</h2>
+        <% if (currentUser && currentUser.tests_taken && currentUser.tests_taken.length > 0) { %>
+          <ul class="results-list">
+            <% currentUser.tests_taken.forEach(function(t){ %>
+              <li>
+                Ball: <%= t.score %>% — <span><%= new Date(t.date || t.createdAt).toLocaleDateString('uz-UZ') %></span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p>Hozircha test natijalari yo‘q. <a href="/tests">Test ishlash</a></p>
+        <% } %>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('partials/footer') %>

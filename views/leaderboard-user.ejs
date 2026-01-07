@@ -1,0 +1,141 @@
+<%- include('./partials/head') %>
+<%- include('./partials/navbar') %>
+
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <% if (!user) { %>
+        <h1 class="section-title">Foydalanuvchi topilmadi</h1>
+        <p class="tests-empty">Bu foydalanuvchi uchun ma'lumot topilmadi.</p>
+      <% } else { %>
+        <h1 class="section-title"><%= user.name %> — profil</h1>
+
+        <div class="profile-grid">
+          <div class="card">
+            <div class="lb-current-card" style="box-shadow:none; padding:0; background:transparent;">
+              <div class="lb-current-left">
+                <div class="lb-avatar-wrap">
+                  <div class="lb-avatar-circle" style="width:64px;height:64px;">
+                    <% if (user.avatar) { %>
+                      <img src="<%= user.avatar %>" alt="avatar" />
+                    <% } else { %>
+                      <span><%= user.name ? user.name.charAt(0).toUpperCase() : 'M' %></span>
+                    <% } %>
+                  </div>
+                </div>
+                <div>
+                  <div class="lb-name" style="font-size:20px;"><%= user.name %></div>
+                  <% if (stats) { %>
+                    <div class="lb-meta">Yechilgan noyob testlar: <strong><%= stats.uniqueTests %></strong></div>
+                    <div class="lb-meta">Umumiy urinishlar: <%= stats.totalAttempts %> ta</div>
+                    <div class="lb-meta">Muvaffaqiyatli urinishlar (≥50%): <%= stats.passedAttempts %> ta (<%= stats.passRate %>%)</div>
+                    <div class="lb-meta">Faol kunlar: <%= stats.activeDays %> kun · O'rtacha <%= stats.avgPerActiveDay %> ta test/kuni</div>
+                  <% } %>
+                </div>
+              </div>
+              <% if (stats) { %>
+                <div class="lb-current-right">
+                  <div class="lb-liquid-ring" style="--percent:<%= stats.avgScore %>;"><div class="lb-liquid-fill"></div><div class="lb-liquid-label"><%= stats.avgScore %>%</div></div>
+                  <div class="lb-meta">O'rtacha aniqlik</div>
+                </div>
+              <% } %>
+            </div>
+
+            <% if (stats) { %>
+              <div class="result-actions" style="margin-top:16px;">
+                <div class="lb-meta">Eng yuqori natija: <strong><%= stats.bestScore %>%</strong></div>
+                <% if (stats.lastScore !== null && typeof stats.lastScore !== 'undefined') { %>
+                  <div class="lb-meta">So'nggi test natijasi: <%= stats.lastScore %>%</div>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="card activity-card">
+            <div class="activity-header">
+              <div>
+                <h2 class="tests-list-title">Kunlar bo'yicha testlar faolligi</h2>
+                <p class="activity-subtitle">Qaysi kunlarda ko'proq test yechganini shu yerda ko'rasiz.</p>
+              </div>
+              <% if (dailyLabels && dailyLabels.length) { %>
+                <div class="activity-legend">
+                  <span class="legend-dot legend-dot-tests"></span>
+                  <span class="legend-label">Testlar soni</span>
+                  <span class="legend-dot legend-dot-accuracy"></span>
+                  <span class="legend-label">O'rtacha aniqlik (%)</span>
+                </div>
+              <% } %>
+            </div>
+
+            <% if (dailyLabels && dailyLabels.length) { %>
+              <div class="activity-chart-wrapper">
+                <canvas id="testsActivityChart"></canvas>
+              </div>
+            <% } else { %>
+              <p class="tests-empty">Bu foydalanuvchi hali test yechmagan.</p>
+            <% } %>
+          </div>
+        </div>
+
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('./partials/footer') %>
+
+<% if (user && dailyLabels && dailyLabels.length) { %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function(){
+    const ctx = document.getElementById('testsActivityChart');
+    if (!ctx) return;
+    const labels = <%- JSON.stringify(dailyLabels) %>;
+    const counts = <%- JSON.stringify(dailyCounts) %>;
+    const avgScores = <%- JSON.stringify(dailyAvgScores) %>;
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Yechilgan testlar soni",
+            data: counts,
+            backgroundColor: 'rgba(52, 211, 153, 0.5)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 1,
+            yAxisID: 'y',
+          },
+          {
+            label: "O'rtacha aniqlik (%)",
+            data: avgScores,
+            type: 'line',
+            borderColor: 'rgba(56, 189, 248, 1)',
+            backgroundColor: 'rgba(56, 189, 248, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            yAxisID: 'y1',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          },
+          y1: {
+            beginAtZero: true,
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { callback: function(v){ return v + '%'; } }
+          }
+        }
+      }
+    });
+  })();
+</script>
+<% } %>

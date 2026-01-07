@@ -1,0 +1,394 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<style>
+  /* Admin dashboard sahifasida AOS opacity ni bloklamasligi uchun */
+  .admin-dashboard-page[data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+</style>
+
+<main class="page admin-dashboard-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <div class="admin-header">
+        <h1 class="section-title">Admin panel</h1>
+        <a href="/admin/logout" class="btn-outline">Chiqish</a>
+      </div>
+
+      <nav class="admin-nav">
+        <a href="#" class="admin-nav-link active" data-target="admin-users">Foydalanuvchilar</a>
+        <a href="#" class="admin-nav-link" data-target="admin-tests">Testlar</a>
+        <a href="#" class="admin-nav-link" data-target="admin-messages">Foydalanuvchilar bilan xabar</a>
+      </nav>
+
+      <div class="admin-sections">
+        <section id="admin-users" class="admin-section-card">
+          <h2>Foydalanuvchilarni boshqarish</h2>
+          <p class="admin-section-desc">
+            Quyida ro'yxatdan o'tgan foydalanuvchilar, ularning testlar soni va o'rtacha natijasi ko'rsatiladi.
+            Har bir foydalanuvchi uchun test tarixini tozalash yoki butun hisobni o'chirish mumkin.
+          </p>
+
+          <% if (users && users.length) { %>
+            <div class="admin-users-table-wrapper">
+              <table class="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>Ism</th>
+                    <th>Email</th>
+                    <th>Testlar soni</th>
+                    <th>O'rtacha natija</th>
+                    <th>Amallar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% users.forEach(function(u){ %>
+                    <tr>
+                      <td><%= u.name %></td>
+                      <td><%= u.email %></td>
+                      <td><%= u.testsCount %></td>
+                      <td><%= u.avgScore %>%</td>
+                      <td class="admin-users-actions">
+                        <form method="POST" action="/admin/users/<%= u._id %>/clear-history" onsubmit="return confirm('Bu foydalanuvchining test tarixini tozalamoqchimisiz?');">
+                          <button type="submit" class="btn-outline admin-btn-small">Tarixni tozalash</button>
+                        </form>
+                        <form method="POST" action="/admin/users/<%= u._id %>/delete" onsubmit="return confirm('Bu foydalanuvchi hisobini butunlay o\'chirmoqchimisiz?');">
+                          <button type="submit" class="btn-primary admin-btn-small" style="background:#e54848;box-shadow:none;">Hisobni o'chirish</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="admin-placeholder">Hozircha ro'yxatda foydalanuvchilar topilmadi.</div>
+          <% } %>
+        </section>
+
+        <section id="admin-tests" class="admin-section-card">
+          <h2>Testlarni boshqarish</h2>
+          <p class="admin-section-desc">
+            Har bir test uchun PDF (Google Drive) linki, savollar soni va javoblar ro'yxati saqlanadi.
+            Quyida mavjud testlar ro'yxati va yangi test qo'shish formasi keltirilgan.
+          </p>
+
+          <% if (typeof testError !== 'undefined' && testError) { %>
+            <div class="alert alert-danger" style="margin-bottom:8px;font-size:13px;">
+              <%= testError %>
+            </div>
+          <% } %>
+
+          <div class="admin-tests-header">
+            <h3>Testlar ro'yxati</h3>
+            <button type="button" id="admin-tests-add-btn" class="btn-primary admin-btn-small">+ Yangi test</button>
+          </div>
+
+          <% if (tests && tests.length) { %>
+            <div class="admin-users-table-wrapper">
+              <table class="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>Nomi</th>
+                    <th>Yaratilgan sana</th>
+                    <th>Amallar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% tests.forEach(function(t){ %>
+                    <tr>
+                      <td><%= t.title %></td>
+                      <td><%= new Date(t.createdAt).toLocaleString('uz-UZ') %></td>
+                      <td class="admin-users-actions">
+                        <a href="/admin/tests/<%= t._id %>/edit" class="btn-outline admin-btn-small">Tahrirlash</a>
+                        <form method="POST" action="/admin/tests/<%= t._id %>/delete" onsubmit="return confirm('Bu testni o\'chirmoqchimisiz?');">
+                          <button type="submit" class="btn-outline admin-btn-small">O'chirish</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="admin-placeholder">Hozircha birorta test qo'shilmagan.</div>
+          <% } %>
+
+          <div id="admin-tests-modal" class="admin-modal admin-section-hidden">
+            <div class="admin-modal-backdrop"></div>
+            <div class="admin-modal-content">
+              <div class="admin-modal-header">
+                <h3>Yangi test qo'shish</h3>
+                <button type="button" id="admin-tests-close" class="admin-modal-close">×</button>
+              </div>
+              <div class="admin-modal-steps">
+                <span class="step-badge active" data-step="1">1-bosqich</span>
+                <span class="step-badge" data-step="2">2-bosqich</span>
+              </div>
+
+              <form method="POST" action="/admin/tests" class="form-grid admin-tests-form">
+                <div class="admin-test-step" data-step="1">
+                  <div class="form-group">
+                    <label for="test-title">Test nomi</label>
+                    <input type="text" id="test-title" name="title" placeholder="Masalan: 7-sinf - 1-test" />
+                  </div>
+                  <div class="form-group">
+                    <label for="pdfLink">Test PDF (Google Drive) linki</label>
+                    <input type="url" id="pdfLink" name="pdfLink" placeholder="https://drive.google.com/..." />
+                  </div>
+                  <div class="form-group">
+                    <label for="totalQuestions">Umumiy savollar soni</label>
+                    <input type="number" id="totalQuestions" name="totalQuestions" min="1" />
+                  </div>
+                  <div class="form-group">
+                    <label for="openCount">Ochiq savollar soni</label>
+                    <input type="number" id="openCount" name="openCount" min="0" />
+                    <small id="test-count-help" style="display:block;font-size:12px;color:#56756a;margin-top:4px;">Yopiq savollar soni avtomatik: umumiy - ochiq.</small>
+                    <small id="test-count-error" style="display:none;font-size:12px;color:#e54848;margin-top:4px;">Ochiq savollar soni umumiy savollar sonidan katta bo'lmasligi kerak.</small>
+                  </div>
+                  <div>
+                    <button type="button" id="admin-tests-next" class="btn-primary">2-bosqichga o'tish</button>
+                  </div>
+                </div>
+
+                <div class="admin-test-step admin-section-hidden" data-step="2">
+                  <div class="form-group">
+                    <label for="answersText">Javoblar ro'yxati</label>
+                    <p style="font-size:12px;color:#56756a;">
+                      Masalan:
+                      <br />
+                      1.A
+                      <br />
+                      2.B
+                      <br />
+                      3.C
+                      <br />
+                      4.D
+                      <br />
+                      5.34
+                      <br />
+                      Eslatma: oxirgi 1 ta savol yopiq bo'ladi va ular uchun javoblar faqat A/B/C/D bo'lishi kerak.
+                    </p>
+                    <textarea id="answersText" name="answersText" rows="6" required placeholder="1.A
+2.B
+3.C
+4.D
+5.34"></textarea>
+                    <small id="answers-error" style="display:none;font-size:12px;color:#e54848;margin-top:4px;"></small>
+                  </div>
+                  <div class="form-group">
+                    <label for="videoLink">Video (Google Drive) linki (ixtiyoriy)</label>
+                    <input type="url" id="videoLink" name="videoLink" placeholder="https://drive.google.com/..." />
+                  </div>
+                  <div style="display:flex;gap:8px;">
+                    <button type="button" id="admin-tests-back" class="btn-outline" style="flex:1;">1-bosqichga qaytish</button>
+                    <button type="submit" class="btn-primary" style="flex:1;">Testni yaratish</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="admin-messages" class="admin-section-card">
+          <h2>Foydalanuvchilar bilan xabarlar</h2>
+          <p class="admin-section-desc">
+            Bu yerda o'quvchilardan kelgan xabarlar va har bir foydalanuvchi bilan yozishmalar (chat) boshqariladi.
+            Admin kerakli foydalanuvchini tanlab, bevosita shu paneldan xabar yozishi mumkin bo'ladi.
+          </p>
+          <div class="admin-placeholder">Chat va xabarlar bo'limi keyingi bosqichda ulab beriladi.</div>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Admin panelda bo'limlarni tab kabi almashtirish
+  (function() {
+    var navLinks = document.querySelectorAll('.admin-nav-link');
+    var sections = document.querySelectorAll('.admin-section-card');
+    var addTestBtn = document.getElementById('admin-tests-add-btn');
+    var testsModal = document.getElementById('admin-tests-modal');
+    var testsClose = document.getElementById('admin-tests-close');
+    var testsBackdrop = document.querySelector('.admin-modal-backdrop');
+    var stepBadges = document.querySelectorAll('.admin-modal-steps .step-badge');
+    var steps = document.querySelectorAll('.admin-test-step');
+    var nextBtn = document.getElementById('admin-tests-next');
+    var backBtn = document.getElementById('admin-tests-back');
+    var totalInput = document.getElementById('totalQuestions');
+    var openInput = document.getElementById('openCount');
+    var countError = document.getElementById('test-count-error');
+    var answersTextarea = document.getElementById('answersText');
+    var answersError = document.getElementById('answers-error');
+
+    navLinks.forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var targetId = this.getAttribute('data-target');
+        if (!targetId) return;
+
+        // active klasslarni yangilash
+        navLinks.forEach(function(l) { l.classList.remove('active'); });
+        this.classList.add('active');
+
+        // bo'limlarni almashtirish
+        sections.forEach(function(sec) {
+          if (sec.id === targetId) {
+            sec.classList.remove('admin-section-hidden');
+          } else {
+            sec.classList.add('admin-section-hidden');
+          }
+        });
+      });
+    });
+
+    // Boshlang'ich holat: faqat foydalanuvchilar bo'limi ko'rinsin
+    sections.forEach(function(sec) {
+      if (sec.id !== 'admin-users') {
+        sec.classList.add('admin-section-hidden');
+      }
+    });
+
+    // Agar URL hash orqali ma'lum bo'lim so'ralgan bo'lsa (#admin-tests yoki #admin-messages)
+    var hash = window.location.hash.replace('#', '');
+    if (hash) {
+      var targetLink = Array.prototype.find.call(navLinks, function(l) {
+        return l.getAttribute('data-target') === hash;
+      });
+      var targetSection = document.getElementById(hash);
+      if (targetLink && targetSection) {
+        navLinks.forEach(function(l) { l.classList.remove('active'); });
+        targetLink.classList.add('active');
+        sections.forEach(function(sec) {
+          if (sec.id === hash) {
+            sec.classList.remove('admin-section-hidden');
+          } else {
+            sec.classList.add('admin-section-hidden');
+          }
+        });
+      }
+    }
+
+    function setStep(step) {
+      steps.forEach(function(s) {
+        if (s.getAttribute('data-step') === String(step)) {
+          s.classList.remove('admin-section-hidden');
+        } else {
+          s.classList.add('admin-section-hidden');
+        }
+      });
+      stepBadges.forEach(function(badge) {
+        if (badge.getAttribute('data-step') === String(step)) {
+          badge.classList.add('active');
+        } else {
+          badge.classList.remove('active');
+        }
+      });
+    }
+
+    // Yangi test modalini ochish/yopish
+    if (addTestBtn && testsModal) {
+      addTestBtn.addEventListener('click', function() {
+        testsModal.classList.remove('admin-section-hidden');
+        setStep(1);
+      });
+    }
+
+    if (testsClose && testsModal) {
+      testsClose.addEventListener('click', function() {
+        testsModal.classList.add('admin-section-hidden');
+      });
+    }
+
+    if (testsBackdrop && testsModal) {
+      testsBackdrop.addEventListener('click', function() {
+        testsModal.classList.add('admin-section-hidden');
+      });
+    }
+
+    // 1- va 2-bosqich o'rtasida o'tish
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        if (totalInput && openInput && countError) {
+          var totalVal = Number(totalInput.value || 0);
+          var openVal = Number(openInput.value || 0);
+          if (!totalVal || totalVal < 1 || openVal < 0 || openVal > totalVal) {
+            countError.style.display = 'block';
+            return;
+          } else {
+            countError.style.display = 'none';
+          }
+        }
+        setStep(2);
+      });
+    }
+
+    if (backBtn) {
+      backBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        setStep(1);
+      });
+    }
+
+    // Javoblar matni uchun oddiy front-end tekshiruv
+    if (answersTextarea && answersError && totalInput && openInput) {
+      answersTextarea.addEventListener('input', function() {
+        answersError.style.display = 'none';
+        answersError.textContent = '';
+
+        var totalVal = Number(totalInput.value || 0);
+        var openVal = Number(openInput.value || 0);
+        if (!totalVal || totalVal < 1 || openVal < 0 || openVal > totalVal) {
+          return;
+        }
+
+        var text = answersTextarea.value || '';
+        var lines = text
+          .split(/\r?\n/)
+          .map(function(l) { return l.trim(); })
+          .filter(function(l) { return l.length > 0; });
+
+        if (lines.length && lines.length !== totalVal) {
+          answersError.style.display = 'block';
+          answersError.textContent = 'Javoblar qatori soni umumiy savollar soniga (' + totalVal + ') teng bo\'lishi kerak.';
+          return;
+        }
+
+        // Tartib raqamlari va yopiq/ochiq turlari
+        var closedUntil = totalVal - openVal;
+        for (var i = 0; i < lines.length; i++) {
+          var m = lines[i].match(/^(\d+)\.\s*(.+)$/);
+          if (!m) {
+            answersError.style.display = 'block';
+            answersError.textContent = '"' + lines[i] + '" qatori noto\'g\'ri formatda. "N.javob" ko\'rinishida yozing.';
+            return;
+          }
+          var idx = Number(m[1]);
+          var ans = m[2].trim();
+          var expected = i + 1;
+          if (idx !== expected) {
+            answersError.style.display = 'block';
+            answersError.textContent = 'Javoblar tartib raqamlari 1, 2, 3 ... ' + totalVal + ' bo\'yicha ketma-ket bo\'lishi kerak.';
+            return;
+          }
+          if (idx <= closedUntil) {
+            if (!/^[ABCD]$/i.test(ans)) {
+              answersError.style.display = 'block';
+              answersError.textContent = idx + '-savol yopiq bo\'lib, javobi faqat A/B/C/D bo\'lishi kerak.';
+              return;
+            }
+          } else {
+            if (!/\d/.test(ans)) {
+              answersError.style.display = 'block';
+              answersError.textContent = idx + '-savol ochiq bo\'lib, javobi sonli (masalan, 34) bo\'lishi kerak.';
+              return;
+            }
+          }
+        }
+      });
+    }
+  })();
+</script>

@@ -1,0 +1,39 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<main class="page admin-login-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner" style="max-width:480px;margin:0 auto;">
+      <h1 class="section-title">Admin panelga kirish</h1>
+      <div class="card">
+        <p class="mb-2">
+          Admin panelga kirish uchun Telegram botdan <strong>8 xonali kod</strong> oling va shu yerga kiriting.
+        </p>
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger" style="margin-bottom:8px;">
+            <%= error %>
+          </div>
+        <% } %>
+        <form method="POST" action="/admin/login">
+          <div class="form-group">
+            <label for="code">Admin kodi</label>
+            <input
+              type="text"
+              id="code"
+              name="code"
+              class="form-control"
+              maxlength="8"
+              required
+              inputmode="numeric"
+              pattern="[0-9]{8}"
+              placeholder="00000000"
+            />
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;margin-top:12px;">
+            Kirish
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>

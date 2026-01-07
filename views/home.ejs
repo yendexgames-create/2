@@ -1,0 +1,128 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <section class="hero" id="hero">
+    <div class="hero-gradient"></div>
+    <div class="hero-inner" data-aos="fade-up">
+      <div class="hero-text">
+        <h1 class="hero-title">Math Club — <span>Matematikani oson o‘rganing</span></h1>
+        <p class="hero-subtitle">Premium darajadagi darslar, kuchli o‘qituvchilar va aniq natijalar.</p>
+        <div class="hero-cta">
+          <a href="/register-course" class="btn-primary btn-bounce">Kursga yozilish</a>
+          <a href="/about" class="btn-outline">Ko‘proq ma’lumot</a>
+        </div>
+        <div class="hero-stats" data-aos="fade-up" data-aos-delay="150">
+          <div class="stat-card">
+            <span class="stat-number" data-count="500">0</span>
+            <span class="stat-label">+ o‘quvchi</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" data-count="95">0</span>
+            <span class="stat-label">% o‘rtacha natija</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" data-count="10">0</span>
+            <span class="stat-label">yillik tajriba</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual" data-aos="fade-left">
+        <div class="math-formulas">
+          <span>√x</span>
+          <span>∫ f(x) dx</span>
+          <span>π</span>
+          <span>Σ</span>
+        </div>
+        <div class="hero-card">
+          <p>Har bir o‘quvchi uchun individual yondashuv.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="home-teacher" data-aos="fade-up">
+    <div class="section-inner">
+      <div class="teacher-highlight">
+        <div class="teacher-photo-ring">
+          <div class="teacher-photo-circle"></div>
+        </div>
+        <div class="teacher-info-block">
+          <span class="badge">Asosiy trener</span>
+          <h2 class="section-title">Matematika bo‘yicha <span>tajribali murabbiy</span></h2>
+          <p>Math Clubdagi asosiy o‘qituvchi — matematika fanidan xalqaro olimpiadalar ishtirokchisi va ko‘plab respublika g‘oliblarini yetishtirgan murabbiy.</p>
+          <ul class="teacher-points">
+            <li>10+ yillik tajriba</li>
+            <li>Olimpiada va OTMga tayyorlov kurslari</li>
+            <li>Qadam-baqadam tushuntirish va kuchli nazorat</li>
+          </ul>
+          <a href="/teacher" class="btn-outline">O‘qituvchi haqida batafsil</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="tests-invite" data-aos="fade-up">
+    <div class="section-inner">
+      <div class="card tests-invite-card">
+        <h2 class="section-title">Bilimingizni <span>onlayn testlar</span> bilan sinab ko‘ring</h2>
+        <p>Har bir mavzudan keyin qisqa testlar orqali natijangizni tekshirib boring. Test natijalari shaxsiy kabinetingizda saqlanadi.</p>
+        <button id="goToTestsBtn" class="btn-primary btn-bounce">Test ishlash</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about" data-aos="fade-up">
+    <div class="section-inner">
+      <h2 class="section-title">Nega aynan <span>Math Club?</span></h2>
+      <div class="section-grid">
+        <div class="card">
+          <h3>Premium darslar</h3>
+          <p>Oliy liga matematik kurslari: maktab, olimpiada va OTMga tayyorgarlik.</p>
+        </div>
+        <div class="card">
+          <h3>Kuchli metodika</h3>
+          <p>Qadam-baqadam tushuntirish, ko‘plab misollar va testlar orqali mustahkamlash.</p>
+        </div>
+        <div class="card">
+          <h3>Natija kafolati</h3>
+          <p>Onlayn monitoring, shaxsiy kabinet va real statistik natijalar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section results" id="results" data-aos="fade-up">
+    <div class="section-inner">
+      <h2 class="section-title">O‘quvchilar <span>natijalari</span></h2>
+      <div class="swiper results-swiper">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide magnify-container">
+            <img src="/images/result1.jpg" alt="Natija 1" class="magnify-image" />
+            <div class="magnifier-lens"></div>
+          </div>
+          <div class="swiper-slide magnify-container">
+            <img src="/images/result2.jpg" alt="Natija 2" class="magnify-image" />
+            <div class="magnifier-lens"></div>
+          </div>
+          <div class="swiper-slide magnify-container">
+            <img src="/images/result3.jpg" alt="Natija 3" class="magnify-image" />
+            <div class="magnifier-lens"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="cta" data-aos="fade-up">
+    <div class="section-inner section-cta">
+      <div>
+        <h2 class="section-title">Bugunoq <span>kursga yoziling</span></h2>
+        <p>O‘quvchilaringizni eng yaxshi matematika muhitiga olib keling.</p>
+      </div>
+      <a href="/register-course" class="btn-primary btn-bounce">Ro‘yxatdan o‘tish</a>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

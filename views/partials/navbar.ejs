@@ -1,0 +1,40 @@
+<header class="navbar sticky">
+  <div class="nav-container">
+    <a href="/" class="logo">Math<span>Club</span></a>
+    <nav class="nav-links">
+      <a href="/">Bosh sahifa</a>
+      <a href="/about">Biz haqimizda</a>
+      <a href="/teacher">O‘qituvchi</a>
+      <a href="/results">Natijalar</a>
+      <a href="/register-course">Kursga yozilish</a>
+      <% if (user) { %>
+        <a href="/tests">Testlar</a>
+        <a href="/leaderboard">Yetakchilar</a>
+        <a href="/messages">Adminga xabarlashish</a>
+      <% } %>
+    </nav>
+    <div class="nav-right">
+      <% if (!user) { %>
+        <a href="/auth/login" class="btn-outline">Kirish</a>
+        <a href="/auth/register" class="btn-primary">Ro‘yxatdan o‘tish</a>
+      <% } else { %>
+        <div class="nav-profile">
+          <span class="nav-username"><%= user.name || 'Foydalanuvchi' %></span>
+          <div class="avatar-dropdown">
+            <div class="avatar-circle">
+              <% if (user.avatar) { %>
+                <img src="<%= user.avatar %>" alt="avatar" />
+              <% } else { %>
+                <span><%= user.name ? user.name.charAt(0).toUpperCase() : 'M' %></span>
+              <% } %>
+            </div>
+            <div class="dropdown-menu">
+              <a href="/profile">Shaxsiy kabinet</a>
+              <a href="/auth/logout">Chiqish</a>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</header>
