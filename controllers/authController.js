@@ -39,10 +39,10 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
-    // Maxsus admin login: faqat parol bilan (email kiritmasdan) admin panelga kirish
-    const adminPassword = process.env.ADMIN_LOGIN_PASSWORD;
+    // Maxsus admin login: faqat login so'zi bilan (email kiritmasdan) admin panelga kirish
+    const adminLogin = process.env.ADMIN_LOGIN;
     if (!email || email.trim() === '') {
-      if (adminPassword && password === adminPassword) {
+      if (adminLogin && password === adminLogin) {
         if (req.session) {
           req.session.isAdmin = true;
         }
@@ -51,7 +51,7 @@ exports.loginUser = async (req, res) => {
 
       return res.render('auth/login', {
         title: 'Kirish — Math Club',
-        error: 'Admin sifatida kirish uchun maxsus parol noto‘g‘ri. Oddiy foydalanuvchi sifatida kirish uchun email va parolni to‘liq kiriting.'
+        error: 'Admin sifatida kirish uchun maxsus login so‘zi noto‘g‘ri. Oddiy foydalanuvchi sifatida kirish uchun email va parolni to‘liq kiriting.'
       });
     }
 
