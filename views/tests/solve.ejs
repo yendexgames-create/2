@@ -254,7 +254,10 @@
           }
           const data = await res.json();
           if (testResult) {
-            testResult.textContent = 'Natija: ' + data.score + '% (' + data.correct + '/' + data.totalClosed + ' to‘g‘ri yopiq savol)';
+            const totalQ = typeof data.totalQuestions === 'number' && data.totalQuestions > 0
+              ? data.totalQuestions
+              : closedCount;
+            testResult.textContent = 'Natija: ' + data.score + '% (' + data.correct + '/' + totalQ + ' to‘g‘ri savol)';
           }
           if (data && typeof data.score === 'number') {
             window.setTimeout(function () {
