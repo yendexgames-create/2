@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
 <%- include('../partials/navbar') %>
-<main class="page" data-aos="fade-up">
+<main class="page tests-page" data-aos="fade-up">
   <section class="section">
     <div class="section-inner">
       <h1 class="section-title">Testlar</h1>
@@ -11,6 +11,7 @@
           <div class="tests-cards">
             <% if (tests && tests.length) { %>
               <% tests.forEach(function(t, idx){ %>
+                <% var score = (typeof userScoresByTest !== 'undefined' && userScoresByTest && userScoresByTest[String(t._id)]) || null; %>
                 <a href="/tests/<%= t._id %>" class="test-card-btn">
                   <div class="test-card-rank">#<%= idx + 1 %></div>
                   <div class="test-card-main">
@@ -25,6 +26,13 @@
                       <% } %>
                     </div>
                   </div>
+                  <% if (score !== null && typeof score !== 'undefined') { %>
+                    <div class="tests-score-pill">
+                      <div class="lb-liquid-ring tests-liquid-ring" style="--percent:<%= score %>;"><div class="lb-liquid-fill"></div><div class="lb-liquid-label"><%= score %>%</div></div>
+                    </div>
+                  <% } else { %>
+                    <div class="tests-score-pill tests-score-pill-empty">Yangi</div>
+                  <% } %>
                 </a>
               <% }); %>
             <% } else { %>

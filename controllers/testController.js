@@ -4,7 +4,27 @@ const Result = require('../models/Result');
 exports.getTestPage = async (req, res) => {
   try {
     const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount');
-    res.render('tests/test-page', { title: 'Testlar — Math Club', tests });
+
+    let userScoresByTest = {};
+    if (req.user) {
+      const results = await Result.find({ userId: req.user._id })
+        .select('testId score')
+        .lean();
+
+      results.forEach((r) => {
+        const key = String(r.testId);
+        const s = typeof r.score === 'number' ? r.score : 0;
+        if (!userScoresByTest[key] || s > userScoresByTest[key]) {
+          userScoresByTest[key] = s;
+        }
+      });
+    }
+
+    res.render('tests/test-page', {
+      title: 'Testlar — Math Club',
+      tests,
+      userScoresByTest
+    });
   } catch (err) {
     console.error('Test sahifa xatosi:', err.message);
     res.status(500).send('Server xatosi');

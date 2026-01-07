@@ -39,7 +39,7 @@
       <% } else { %>
         <div class="lb-grid">
           <% leaderboard.forEach(function(item) { %>
-            <div class="lb-card lb-rank-<%= item.rank <= 3 ? item.rank : 'default' %>">
+            <a href="/leaderboard/user/<%= item.userId %>" class="lb-card lb-rank-<%= item.rank <= 3 ? item.rank : 'default' %>">
               <div class="lb-rank">#<%= item.rank %></div>
               <div class="lb-card-main">
                 <div class="lb-avatar-wrap">
@@ -63,7 +63,7 @@
                   <div class="lb-meta">Aniqlik</div>
                 </div>
               </div>
-            </div>
+            </a>
           <% }); %>
         </div>
       <% } %>
