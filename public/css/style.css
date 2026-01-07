@@ -643,6 +643,52 @@ a { text-decoration: none; color: inherit; }
   color: #ffffff;
 }
 
+/* Admin panel – telefonlar uchun moslashuvchan ko'rinish */
+@media (max-width: 720px) {
+  .admin-dashboard-page .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-dashboard-page .admin-header .btn-outline {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .admin-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-section-card {
+    padding: 14px 12px 12px;
+  }
+
+  .admin-users-table {
+    font-size: 12px;
+  }
+
+  .admin-users-table th,
+  .admin-users-table td {
+    padding: 6px 8px;
+  }
+
+  .admin-users-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-btn-small {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-modal-content {
+    max-width: 460px;
+    width: calc(100% - 24px);
+    padding: 16px 14px 14px;
+  }
+}
+
 @media (max-width: 800px) {
   .hero-inner { grid-template-columns: 1fr; padding-top: 32px; }
   .hero-visual { order: -1; display: flex; justify-content: center; }
