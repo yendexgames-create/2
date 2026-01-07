@@ -39,15 +39,20 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
-    // Maxsus admin login: alohida email/parol orqali admin panelga kirish
-    const adminEmail = process.env.ADMIN_LOGIN_EMAIL;
+    // Maxsus admin login: faqat parol bilan (email kiritmasdan) admin panelga kirish
     const adminPassword = process.env.ADMIN_LOGIN_PASSWORD;
-    if (adminEmail && adminPassword && email === adminEmail && password === adminPassword) {
-      // Admin sessiyasini yoqib, admin dashboardga yo'naltiramiz
-      if (req.session) {
-        req.session.isAdmin = true;
+    if (!email || email.trim() === '') {
+      if (adminPassword && password === adminPassword) {
+        if (req.session) {
+          req.session.isAdmin = true;
+        }
+        return res.redirect('/admin');
       }
-      return res.redirect('/admin');
+
+      return res.render('auth/login', {
+        title: 'Kirish — Math Club',
+        error: 'Admin sifatida kirish uchun maxsus parol noto‘g‘ri. Oddiy foydalanuvchi sifatida kirish uchun email va parolni to‘liq kiriting.'
+      });
     }
 
     const user = await User.findOne({ email });
