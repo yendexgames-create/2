@@ -26,6 +26,7 @@
               </div>
             </div>
 
+            <% var scoreVal = result && typeof result.score === 'number' ? result.score : 0; %>
             <div class="test-result-block">
               <% if (!result) { %>
                 <p class="tests-empty">Bu test bo‘yicha hali natija topilmadi.</p>
@@ -37,6 +38,15 @@
                     Yakunlangan sana: <%= new Date(result.createdAt).toLocaleString('uz-UZ') %>
                   </div>
                 </div>
+
+                <% if (scoreVal >= 90) { %>
+                  <div class="result-confetti result-confetti-left"></div>
+                  <div class="result-confetti result-confetti-right"></div>
+                <% } %>
+
+                <% if (scoreVal === 100) { %>
+                  <div class="result-fireworks"></div>
+                <% } %>
 
                 <% if (passed) { %>
                   <div class="test-video-wrapper">

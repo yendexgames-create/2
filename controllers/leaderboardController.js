@@ -109,17 +109,19 @@ exports.getLeaderboardUserProfile = async (req, res) => {
       if (!r.createdAt) return;
       const d = r.createdAt.toISOString().slice(0, 10); // YYYY-MM-DD
       if (!dailyMap.has(d)) {
-        dailyMap.set(d, { date: d, count: 0, scoreSum: 0, n: 0 });
+        dailyMap.set(d, { date: d, testsSet: new Set(), scoreSum: 0, n: 0 });
       }
       const entry = dailyMap.get(d);
-      entry.count += 1;
+      // Har bir kunda bir xil test bir necha marta yechilsa ham, testsSet orqali 1 ta deb saqlaymiz
+      entry.testsSet.add(String(r.testId));
       entry.scoreSum += r.score || 0;
       entry.n += 1;
     });
 
     const dailyStats = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
     const dailyLabels = dailyStats.map((d) => d.date);
-    const dailyCounts = dailyStats.map((d) => d.count);
+    // Har kuni noyob testlar soni: testsSet.size
+    const dailyCounts = dailyStats.map((d) => (d.testsSet ? d.testsSet.size : 0));
     const dailyAvgScores = dailyStats.map((d) => (d.n ? Math.round(d.scoreSum / d.n) : 0));
 
     const activeDays = dailyStats.length;

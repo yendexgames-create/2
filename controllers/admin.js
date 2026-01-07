@@ -172,6 +172,109 @@ exports.deleteTest = async (req, res) => {
   }
 };
 
+// Testni tahrirlash formasi
+exports.editTestForm = async (req, res) => {
+  try {
+    const testId = req.params.id;
+    const test = await Test.findById(testId).lean();
+    if (!test) {
+      const msg = encodeURIComponent('Test topilmadi yoki o‘chirilgan.');
+      return res.redirect('/admin?testError=' + msg + '#admin-tests');
+    }
+
+    res.render('admin/edit-test', {
+      title: 'Testni tahrirlash',
+      test,
+      testError: null
+    });
+  } catch (err) {
+    console.error('Testni tahrirlash formasini yuklash xatosi:', err.message);
+    const msg = encodeURIComponent('Testni tahrirlashda server xatosi yuz berdi.');
+    res.redirect('/admin?testError=' + msg + '#admin-tests');
+  }
+};
+
+// Mavjud testni yangilash
+exports.updateTest = async (req, res) => {
+  try {
+    const testId = req.params.id;
+    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink } = req.body;
+
+    const total = Number(totalQuestions || 0);
+    const open = Number(openCount || 0);
+    const closed = total - open;
+
+    if (!title || !pdfLink || !total || total < 1 || open < 0) {
+      const msg = encodeURIComponent("Test nomi, PDF linki va savollar soni to'g'ri kiritilganiga ishonch hosil qiling.");
+      return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+    }
+
+    if (open > total) {
+      const msg = encodeURIComponent("Ochiq savollar soni umumiy savollar sonidan katta bo'lishi mumkin emas.");
+      return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+    }
+
+    const lines = (answersText || '')
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    if (lines.length !== total) {
+      const msg = encodeURIComponent('Javoblar qatori soni umumiy savollar soniga (' + total + ') teng bo\'lishi kerak.');
+      return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+    }
+
+    const parsed = [];
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(/^(\d+)\.\s*(.+)$/);
+      if (!match) {
+        const msg = encodeURIComponent('"' + lines[i] + '" qatori noto\'g\'ri formatda. "N.javob" ko\'rinishida yozing (masalan: 5.34 yoki 2.A).');
+        return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+      }
+      const index = Number(match[1]);
+      const answer = match[2].trim();
+      const expected = i + 1;
+      if (index !== expected) {
+        const msg = encodeURIComponent('Javoblar tartib raqamlari ketma-ket bo\'lishi kerak: 1, 2, 3 ... ' + total + '. Xato qator: "' + lines[i] + '"');
+        return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+      }
+      parsed.push({ index, answer });
+    }
+
+    const closedUntil = total - open;
+    for (let i = 0; i < parsed.length; i++) {
+      const { index, answer } = parsed[i];
+      if (index <= closedUntil) {
+        if (!/^[ABCD]$/i.test(answer)) {
+          const msg = encodeURIComponent(index + "-savol yopiq bo'lib, javobi faqat A/B/C/D bo'lishi kerak.");
+          return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+        }
+      } else {
+        if (!/\d/.test(answer)) {
+          const msg = encodeURIComponent(index + "-savol ochiq bo'lib, javobi sonli (masalan, 34) bo'lishi kerak.");
+          return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
+        }
+      }
+    }
+
+    await Test.findByIdAndUpdate(testId, {
+      title,
+      pdfLink,
+      totalQuestions: total,
+      closedCount: closed,
+      openCount: open,
+      answersText,
+      videoLink
+    });
+
+    res.redirect('/admin#admin-tests');
+  } catch (err) {
+    console.error('Testni yangilash xatosi:', err.message);
+    const msg = encodeURIComponent('Testni yangilashda server xatosi yuz berdi.');
+    res.redirect('/admin?testError=' + msg + '#admin-tests');
+  }
+};
+
 exports.clearUserHistory = async (req, res) => {
   try {
     const userId = req.params.id;

@@ -148,143 +148,146 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentAnswers = [];
   let currentIndex = 0;
 
-  if (testCards && testCards.length) {
-    testCards.forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-test-id');
-        const title = btn.getAttribute('data-test-title');
-        if (!id) return;
+  // Eski tests ro'yxati sahifasi uchun JS: faqat testContainer yoki testCards bo'lsa ishlasin.
+  if (testContainer || (testCards && testCards.length)) {
+    if (testCards && testCards.length) {
+      testCards.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-test-id');
+          const title = btn.getAttribute('data-test-title');
+          if (!id) return;
+          try {
+            const res = await fetch(`/tests/api/${id}`);
+            if (res.status === 401) {
+              alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
+              window.location.href = '/auth/login';
+              return;
+            }
+            const data = await res.json();
+            openTest(id, title, data);
+          } catch (e) {
+            console.error(e);
+          }
+        });
+      });
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', async () => {
+        if (!currentTestId) return;
         try {
-          const res = await fetch(`/tests/api/${id}`);
+          const res = await fetch(`/tests/api/${currentTestId}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers: currentAnswers })
+          });
           if (res.status === 401) {
             alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
             window.location.href = '/auth/login';
             return;
           }
           const data = await res.json();
-          openTest(id, title, data);
+          testResult.textContent = `Natija: ${data.score}% (${data.correct}/${data.totalClosed} to‘g‘ri yopiq savol)`;
+          if (data.passed && data.hasVideo && data.videoLink && testVideoWrapper && testVideoFrame) {
+            testVideoWrapper.classList.remove('hidden');
+            testVideoFrame.src = data.videoLink;
+          } else if (testVideoWrapper && testVideoFrame) {
+            testVideoWrapper.classList.add('hidden');
+            testVideoFrame.src = '';
+          }
         } catch (e) {
           console.error(e);
         }
       });
-    });
-  }
+    }
 
-  if (submitBtn) {
-    submitBtn.addEventListener('click', async () => {
-      if (!currentTestId) return;
-      try {
-        const res = await fetch(`/tests/api/${currentTestId}/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ answers: currentAnswers })
-        });
-        if (res.status === 401) {
-          alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
-          window.location.href = '/auth/login';
-          return;
-        }
-        const data = await res.json();
-        testResult.textContent = `Natija: ${data.score}% (${data.correct}/${data.totalClosed} to‘g‘ri yopiq savol)`;
-        if (data.passed && data.hasVideo && data.videoLink && testVideoWrapper && testVideoFrame) {
-          testVideoWrapper.classList.remove('hidden');
-          testVideoFrame.src = data.videoLink;
-        } else if (testVideoWrapper && testVideoFrame) {
-          testVideoWrapper.classList.add('hidden');
-          testVideoFrame.src = '';
-        }
-      } catch (e) {
-        console.error(e);
+    function openTest(id, title, meta) {
+      currentTestId = id;
+      const total = Number(meta.totalQuestions || 0);
+      const closed = Number(meta.closedCount || 0);
+      currentClosedCount = closed;
+      currentAnswers = new Array(closed).fill('');
+      currentIndex = 0;
+
+      if (testTitleEl) testTitleEl.textContent = title || '';
+      if (testMetaEl) {
+        const parts = [];
+        if (total) parts.push(`${total} ta savol`);
+        if (closed) parts.push(`${closed} ta yopiq (A/B/C/D) savol`);
+        testMetaEl.textContent = parts.join(' · ');
       }
-    });
-  }
 
-  function openTest(id, title, meta) {
-    currentTestId = id;
-    const total = Number(meta.totalQuestions || 0);
-    const closed = Number(meta.closedCount || 0);
-    currentClosedCount = closed;
-    currentAnswers = new Array(closed).fill('');
-    currentIndex = 0;
+      if (testPdfFrame && meta.pdfLink) {
+        testPdfFrame.src = meta.pdfLink;
+      }
 
-    if (testTitleEl) testTitleEl.textContent = title || '';
-    if (testMetaEl) {
-      const parts = [];
-      if (total) parts.push(`${total} ta savol`);
-      if (closed) parts.push(`${closed} ta yopiq (A/B/C/D) savol`);
-      testMetaEl.textContent = parts.join(' · ');
+      renderBadges(closed);
+      updateProgress(0, closed);
+      if (testContainer) testContainer.classList.remove('hidden');
+      if (testResult) testResult.textContent = '';
+      if (testVideoWrapper && testVideoFrame) {
+        testVideoWrapper.classList.add('hidden');
+        testVideoFrame.src = '';
+      }
     }
 
-    if (testPdfFrame && meta.pdfLink) {
-      testPdfFrame.src = meta.pdfLink;
+    function renderBadges(count) {
+      if (!questionBadges) return;
+      questionBadges.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'question-badge';
+        btn.textContent = i + 1;
+        btn.dataset.index = i;
+        btn.addEventListener('click', () => {
+          setCurrentIndex(i);
+        });
+        questionBadges.appendChild(btn);
+      }
+      if (count > 0) {
+        setCurrentIndex(0);
+      }
     }
 
-    renderBadges(closed);
-    updateProgress(0, closed);
-    if (testContainer) testContainer.classList.remove('hidden');
-    if (testResult) testResult.textContent = '';
-    if (testVideoWrapper && testVideoFrame) {
-      testVideoWrapper.classList.add('hidden');
-      testVideoFrame.src = '';
-    }
-  }
-
-  function renderBadges(count) {
-    if (!questionBadges) return;
-    questionBadges.innerHTML = '';
-    for (let i = 0; i < count; i++) {
-      const btn = document.createElement('button');
-      btn.className = 'question-badge';
-      btn.textContent = i + 1;
-      btn.dataset.index = i;
-      btn.addEventListener('click', () => {
-        setCurrentIndex(i);
+    function setCurrentIndex(idx) {
+      currentIndex = idx;
+      if (!questionBadges || !answerControls) return;
+      const badges = questionBadges.querySelectorAll('.question-badge');
+      badges.forEach((b) => {
+        b.classList.toggle('active', Number(b.dataset.index) === idx);
+        const ans = currentAnswers[Number(b.dataset.index)] || '';
+        b.classList.toggle('answered', !!ans);
       });
-      questionBadges.appendChild(btn);
+      answerControls.classList.remove('hidden');
+      const currentAns = currentAnswers[idx] || '';
+      if (answerButtons && answerButtons.length) {
+        answerButtons.forEach((btn) => {
+          btn.classList.toggle('selected', btn.getAttribute('data-answer') === currentAns);
+        });
+      }
+      if (answerInfo) {
+        answerInfo.textContent = `${idx + 1}-savol uchun A/B/C/D variantidan birini tanlang.`;
+      }
     }
-    if (count > 0) {
-      setCurrentIndex(0);
-    }
-  }
 
-  function setCurrentIndex(idx) {
-    currentIndex = idx;
-    if (!questionBadges || !answerControls) return;
-    const badges = questionBadges.querySelectorAll('.question-badge');
-    badges.forEach((b) => {
-      b.classList.toggle('active', Number(b.dataset.index) === idx);
-      const ans = currentAnswers[Number(b.dataset.index)] || '';
-      b.classList.toggle('answered', !!ans);
-    });
-    answerControls.classList.remove('hidden');
-    const currentAns = currentAnswers[idx] || '';
     if (answerButtons && answerButtons.length) {
       answerButtons.forEach((btn) => {
-        btn.classList.toggle('selected', btn.getAttribute('data-answer') === currentAns);
+        btn.addEventListener('click', () => {
+          const val = btn.getAttribute('data-answer');
+          if (!val) return;
+          currentAnswers[currentIndex] = val;
+          setCurrentIndex(currentIndex);
+          const answeredCount = currentAnswers.filter((a) => !!a).length;
+          updateProgress(answeredCount, currentClosedCount);
+        });
       });
     }
-    if (answerInfo) {
-      answerInfo.textContent = `${idx + 1}-savol uchun A/B/C/D variantidan birini tanlang.`;
+
+    function updateProgress(current, total) {
+      if (!progressBar) return;
+      const percent = total ? (current / total) * 100 : 0;
+      progressBar.style.width = percent + '%';
     }
-  }
-
-  if (answerButtons && answerButtons.length) {
-    answerButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const val = btn.getAttribute('data-answer');
-        if (!val) return;
-        currentAnswers[currentIndex] = val;
-        setCurrentIndex(currentIndex);
-        const answeredCount = currentAnswers.filter((a) => !!a).length;
-        updateProgress(answeredCount, currentClosedCount);
-      });
-    });
-  }
-
-  function updateProgress(current, total) {
-    if (!progressBar) return;
-    const percent = total ? (current / total) * 100 : 0;
-    progressBar.style.width = percent + '%';
   }
 });
 

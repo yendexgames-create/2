@@ -9,7 +9,9 @@ const {
   clearUserHistory,
   deleteUser,
   createTest,
-  deleteTest
+  deleteTest,
+  editTestForm,
+  updateTest
 } = require('../controllers/admin');
 
 // Login sahifasi
@@ -29,5 +31,7 @@ router.post('/users/:id/delete', ensureAdmin, deleteUser);
 // Testlarni boshqarish
 router.post('/tests', ensureAdmin, createTest);
 router.post('/tests/:id/delete', ensureAdmin, deleteTest);
+router.get('/tests/:id/edit', ensureAdmin, editTestForm);
+router.post('/tests/:id/edit', ensureAdmin, updateTest);
 
 module.exports = router;

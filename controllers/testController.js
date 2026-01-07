@@ -45,9 +45,21 @@ exports.getTestSolvePage = async (req, res) => {
       });
     }
 
+    const plain = test.toObject();
+    let closedForClient = Number(plain.closedCount || 0);
+    const totalQ = Number(plain.totalQuestions || 0);
+    const openQ = Number(plain.openCount || 0);
+
+    if (!closedForClient && totalQ && openQ >= 0) {
+      // Agar closedCount kiritilmagan bo'lsa, totalQuestions - openCount orqali hisoblaymiz
+      closedForClient = Math.max(totalQ - openQ, 0);
+    }
+
+    plain.displayClosedCount = closedForClient;
+
     res.render('tests/solve', {
       title: test.title + ' — Testni yechish',
-      test,
+      test: plain,
       error: null
     });
   } catch (err) {
@@ -113,7 +125,12 @@ exports.submitTest = async (req, res) => {
     if (!test) return res.status(404).json({ message: 'Test topilmadi' });
 
     const total = Number(test.totalQuestions || 0);
-    const closed = Number(test.closedCount || 0);
+    let closed = Number(test.closedCount || 0);
+
+    if (!closed && total && typeof test.openCount !== 'undefined' && test.openCount !== null) {
+      const openQ = Number(test.openCount || 0);
+      closed = Math.max(total - openQ, 0);
+    }
 
     if (!total || !closed || !test.answersText) {
       return res.status(400).json({ message: 'Bu test hozircha onlayn yechish uchun tayyor emas.' });

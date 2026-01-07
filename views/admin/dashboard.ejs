@@ -102,6 +102,7 @@
                       <td><%= t.title %></td>
                       <td><%= new Date(t.createdAt).toLocaleString('uz-UZ') %></td>
                       <td class="admin-users-actions">
+                        <a href="/admin/tests/<%= t._id %>/edit" class="btn-outline admin-btn-small">Tahrirlash</a>
                         <form method="POST" action="/admin/tests/<%= t._id %>/delete" onsubmit="return confirm('Bu testni o\'chirmoqchimisiz?');">
                           <button type="submit" class="btn-outline admin-btn-small">O'chirish</button>
                         </form>
