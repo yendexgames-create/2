@@ -177,9 +177,23 @@ exports.submitTest = async (req, res) => {
         const userOpenRaw = (safeOpenAnswers[openIndex] || '').toString().trim();
         if (!userOpenRaw) continue;
 
-        // Raqamli taqqoslash: vergul/bo'shliqlarni inobatga olmasdan
+        // Raqamli taqqoslash: bo'shliqlar/vergullarni inobatga olmasdan, son sifatida solishtirishga harakat qilamiz
         const norm = (v) => v.replace(/\s+/g, '').replace(',', '.');
-        if (norm(userOpenRaw) === norm(rightRaw)) {
+        const userNorm = norm(userOpenRaw);
+        const rightNorm = norm(rightRaw);
+
+        const userNum = parseFloat(userNorm);
+        const rightNum = parseFloat(rightNorm);
+
+        const userIsNum = !Number.isNaN(userNum) && Number.isFinite(userNum);
+        const rightIsNum = !Number.isNaN(rightNum) && Number.isFinite(rightNum);
+
+        if (userIsNum && rightIsNum) {
+          if (userNum === rightNum) {
+            correct++;
+          }
+        } else if (userNorm === rightNorm) {
+          // Agar son emas bo'lsa, eski matn bo'yicha tekshiruv
           correct++;
         }
       }
