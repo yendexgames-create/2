@@ -40,15 +40,15 @@ exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
     // Maxsus admin login: ikki bosqichli oqim
-    // 1-bosqich: email bo'sh, parol ADMIN_LOGIN_PASSWORD ga teng bo'lsa -> login so'zini so'raymiz
-    // 2-bosqich: email bo'sh, sessiyada adminStage='step1' va parol ADMIN_LOGIN ga teng bo'lsa -> admin panelga kiritamiz
+    // 1-bosqich: email bo'sh, password ADMIN_LOGIN ga teng bo'lsa -> admin parolini so'raymiz
+    // 2-bosqich: email bo'sh, sessiyada adminStage='step1' va password ADMIN_LOGIN_PASSWORD ga teng bo'lsa -> admin panelga kiritamiz
     const adminPassword = process.env.ADMIN_LOGIN_PASSWORD;
     const adminLogin = process.env.ADMIN_LOGIN;
 
     if (!email || email.trim() === '') {
-      // 2-bosqich: login so'zini tekshirish
+      // 2-bosqich: admin parolini tekshirish
       if (req.session && req.session.adminStage === 'step1') {
-        if (adminLogin && password === adminLogin) {
+        if (adminPassword && password === adminPassword) {
           req.session.isAdmin = true;
           req.session.adminStage = null;
           return res.redirect('/admin');
@@ -57,18 +57,18 @@ exports.loginUser = async (req, res) => {
         req.session.adminStage = null;
         return res.render('auth/login', {
           title: 'Kirish — Math Club',
-          error: 'Admin login so‘zi noto‘g‘ri.'
+          error: 'Admin paroli noto‘g‘ri.'
         });
       }
 
-      // 1-bosqich: maxsus admin parolni tekshirish
-      if (adminPassword && password === adminPassword) {
+      // 1-bosqich: maxsus admin login so'zini tekshirish
+      if (adminLogin && password === adminLogin) {
         if (req.session) {
           req.session.adminStage = 'step1';
         }
         return res.render('auth/login', {
           title: 'Kirish — Math Club',
-          error: 'Endi admin login so‘zingizni kiriting.'
+          error: 'Endi admin parolingizni kiriting.'
         });
       }
 
