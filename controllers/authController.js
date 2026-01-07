@@ -39,6 +39,17 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
+    // Maxsus admin login: alohida email/parol orqali admin panelga kirish
+    const adminEmail = process.env.ADMIN_LOGIN_EMAIL;
+    const adminPassword = process.env.ADMIN_LOGIN_PASSWORD;
+    if (adminEmail && adminPassword && email === adminEmail && password === adminPassword) {
+      // Admin sessiyasini yoqib, admin dashboardga yo'naltiramiz
+      if (req.session) {
+        req.session.isAdmin = true;
+      }
+      return res.redirect('/admin');
+    }
+
     const user = await User.findOne({ email });
     if (!user || !user.password) {
       return res.render('auth/login', { title: 'Kirish — Math Club', error: 'Email yoki parol noto‘g‘ri' });
