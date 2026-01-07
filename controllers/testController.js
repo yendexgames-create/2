@@ -120,7 +120,7 @@ exports.getTestData = async (req, res) => {
 
 exports.submitTest = async (req, res) => {
   try {
-    const { answers } = req.body; // answers: ['A','C', ...] faqat yopiq savollar uchun
+    const { answers, openAnswers } = req.body; // answers: yopiq savollar uchun, openAnswers: ochiq savollar uchun
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test topilmadi' });
 
@@ -157,14 +157,35 @@ exports.submitTest = async (req, res) => {
     }
 
     let correct = 0;
-    const maxClosed = Math.min(closed, parsed.length, answers.length);
-    for (let i = 0; i < maxClosed; i++) {
-      const userAns = (answers[i] || '').toString().trim().toUpperCase();
-      const rightAns = (parsed[i].answer || '').toString().trim().toUpperCase();
-      if (userAns && userAns === rightAns) correct++;
+
+    const safeAnswers = Array.isArray(answers) ? answers : [];
+    const safeOpenAnswers = Array.isArray(openAnswers) ? openAnswers : [];
+
+    for (let i = 0; i < total; i++) {
+      const rightRaw = (parsed[i].answer || '').toString().trim();
+
+      if (i < closed) {
+        // Yopiq savollar: A/B/C/D
+        const userAns = (safeAnswers[i] || '').toString().trim().toUpperCase();
+        const rightAns = rightRaw.toUpperCase();
+        if (userAns && userAns === rightAns) {
+          correct++;
+        }
+      } else {
+        // Ochiq savollar: sonli javoblar
+        const openIndex = i - closed;
+        const userOpenRaw = (safeOpenAnswers[openIndex] || '').toString().trim();
+        if (!userOpenRaw) continue;
+
+        // Raqamli taqqoslash: vergul/bo'shliqlarni inobatga olmasdan
+        const norm = (v) => v.replace(/\s+/g, '').replace(',', '.');
+        if (norm(userOpenRaw) === norm(rightRaw)) {
+          correct++;
+        }
+      }
     }
 
-    const score = Math.round((correct / (closed || 1)) * 100);
+    const score = Math.round((correct / (total || 1)) * 100);
     const passed = score >= 50;
 
     await Result.create({
@@ -180,6 +201,7 @@ exports.submitTest = async (req, res) => {
       score,
       correct,
       totalClosed: closed,
+      totalQuestions: total,
       passed,
       hasVideo: !!test.videoLink,
       videoLink: test.videoLink || null

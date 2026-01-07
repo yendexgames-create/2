@@ -231,10 +231,21 @@
       submitBtn.addEventListener('click', async function () {
         if (!testId || !closedCount) return;
         try {
+          // Ochiq savollar javoblarini yig'amiz
+          let openAnswers = [];
+          if (openCount > 0 && openQuestionsPanel) {
+            const items = openQuestionsPanel.querySelectorAll('.open-question-item');
+            items.forEach(function (item) {
+              const textarea = item.querySelector('.open-question-input');
+              const val = textarea && textarea.value ? textarea.value.toString().trim() : '';
+              openAnswers.push(val);
+            });
+          }
+
           const res = await fetch('/tests/api/' + testId + '/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answers: currentAnswers })
+            body: JSON.stringify({ answers: currentAnswers, openAnswers: openAnswers })
           });
           if (res.status === 401) {
             alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
