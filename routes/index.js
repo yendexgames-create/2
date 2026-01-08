@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { ensureAuthOptional, ensureAuth } = require('../utils/authMiddleware');
 const leaderboardController = require('../controllers/leaderboardController');
+const messageController = require('../controllers/messageController');
 
 router.get('/', ensureAuthOptional, (req, res) => {
   res.render('home', { title: 'Math Club — Bosh sahifa' });
@@ -30,15 +31,15 @@ router.get('/profile', ensureAuth, (req, res) => {
   res.render('profile', { title: 'Shaxsiy kabinet', user: req.user });
 });
 
-// Adminga xabar yozish sahifasi (oddiy forma)
+// Adminga xabar yozish sahifasi (chat ko‘rinishida)
 router.get('/messages', ensureAuth, (req, res) => {
-  res.render('messages', { title: 'Adminga xabarlashish' });
+  res.render('messages', { title: 'Adminga xabarlashish', user: req.user });
 });
 
-// Adminga xabar yuborish (keyin Message modeliga ulanadi)
-router.post('/messages', ensureAuth, (req, res) => {
-  // TODO: bu yerda Message modeliga saqlash va adminga yetkazish qo'shiladi
-  res.redirect('/messages');
-});
+// User chat API: o'z threadini olish
+router.get('/messages/api/thread', ensureAuth, messageController.getUserThread);
+
+// User chat API: yangi xabar yuborish (matn yoki rasm URL)
+router.post('/messages/api', ensureAuth, messageController.sendUserMessage);
 
 module.exports = router;

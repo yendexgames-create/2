@@ -14,7 +14,10 @@ const messageSchema = new mongoose.Schema(
     },
     text: {
       type: String,
-      required: true,
+      trim: true
+    },
+    imageUrl: {
+      type: String,
       trim: true
     }
   },
@@ -22,5 +25,13 @@ const messageSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+// Hech bo'lmaganda text yoki imageUrl bo'lishi kerak
+messageSchema.pre('validate', function (next) {
+  if (!this.text && !this.imageUrl) {
+    this.invalidate('text', 'Xabar matni yoki rasm bo‘lishi kerak');
+  }
+  next();
+});
 
 module.exports = mongoose.model('Message', messageSchema);
