@@ -42,7 +42,13 @@ exports.sendUserMessage = async (req, res) => {
       text: cleanText || undefined,
       imageUrl: cleanImage || undefined
     });
+    // Agar oddiy forma yuborilgan bo'lsa (HTML kutayotgan bo'lsa), sahifaga qayta redirect qilamiz
+    const acceptsHtml = req.headers.accept && req.headers.accept.indexOf('text/html') !== -1;
+    if (acceptsHtml) {
+      return res.redirect('/messages');
+    }
 
+    // Aks holda API iste'molchilari uchun JSON
     res.status(201).json({ message });
   } catch (err) {
     console.error('sendUserMessage xatosi:', err.message);
