@@ -1,0 +1,22 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Adminga xabar yozish</h1>
+      <div class="card" style="max-width: 640px; margin: 0 auto;">
+        <p style="font-size:14px;color:#56756a;margin-bottom:8px;">
+          Bu yerda adminga o'z savolingizni yoki fikringizni yozib qoldirishingiz mumkin.
+        </p>
+        <form method="POST" action="/messages" class="form-grid">
+          <div class="form-group">
+            <label for="messageText">Xabar matni</label>
+            <textarea id="messageText" name="text" rows="4" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Yuborish</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('partials/footer') %>

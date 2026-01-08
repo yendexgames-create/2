@@ -30,4 +30,15 @@ router.get('/profile', ensureAuth, (req, res) => {
   res.render('profile', { title: 'Shaxsiy kabinet', user: req.user });
 });
 
+// Adminga xabar yozish sahifasi (oddiy forma)
+router.get('/messages', ensureAuth, (req, res) => {
+  res.render('messages', { title: 'Adminga xabarlashish' });
+});
+
+// Adminga xabar yuborish (keyin Message modeliga ulanadi)
+router.post('/messages', ensureAuth, (req, res) => {
+  // TODO: bu yerda Message modeliga saqlash va adminga yetkazish qo'shiladi
+  res.redirect('/messages');
+});
+
 module.exports = router;
