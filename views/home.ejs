@@ -1,22 +1,7 @@
 <%- include('partials/head') %>
 <%- include('partials/navbar') %>
 
-<main class="home-page">
-  <!-- Scroll-linked intro: faqat skroll bilan jonlanadi -->
-  <section class="home-intro" id="homeIntro">
-    <div class="home-intro-bg"></div>
-    <div class="home-intro-inner">
-      <h1 class="home-intro-title">Math Club Exams</h1>
-      <p class="home-intro-subtitle">
-        Skroll qilganingizda intro jonlanadi, yana biroz skroll qilsangiz – asosiy sayt boshlanadi.
-      </p>
-      <div class="home-intro-actions">
-        <button class="home-intro-btn home-intro-btn-primary">Boshlash shart emas 🙂</button>
-        <button class="home-intro-btn">Pastga skroll qiling</button>
-      </div>
-    </div>
-  </section>
-
+<main>
   <section class="hero" id="hero">
     <div class="hero-gradient"></div>
     <div class="hero-inner" data-aos="fade-up">
@@ -139,44 +124,5 @@
     </div>
   </section>
 </main>
-
-<script>
-  (function () {
-    var intro = document.getElementById('homeIntro');
-    if (!intro) return;
-    var title = intro.querySelector('.home-intro-title');
-    var subtitle = intro.querySelector('.home-intro-subtitle');
-    var actions = intro.querySelector('.home-intro-actions');
-
-    function onScroll() {
-      var rect = intro.getBoundingClientRect();
-      var vh = window.innerHeight || document.documentElement.clientHeight;
-      var raw = 1 - rect.top / vh;
-      var p = Math.min(Math.max(raw, 0), 1);
-      var eased = p / 0.6;
-      eased = Math.min(Math.max(eased, 0), 1);
-
-      if (title) {
-        title.style.opacity = eased;
-        title.style.transform = 'translateY(' + (60 * (1 - eased)) + 'px)';
-      }
-      if (subtitle) {
-        var subEased = Math.max(0, eased - 0.15) / 0.85;
-        subtitle.style.opacity = subEased;
-        subtitle.style.transform = 'translateY(' + (60 * (1 - subEased)) + 'px)';
-      }
-      if (actions) {
-        var actEased = Math.max(0, eased - 0.35) / 0.65;
-        actions.style.opacity = actEased;
-        var translate = 40 * (1 - actEased);
-        var scale = 0.95 + 0.05 * actEased;
-        actions.style.transform = 'translateY(' + translate + 'px) scale(' + scale + ')';
-      }
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-  })();
-</script>
 
 <%- include('partials/footer') %>
