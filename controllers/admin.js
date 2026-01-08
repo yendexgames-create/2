@@ -305,3 +305,63 @@ exports.deleteUser = async (req, res) => {
     res.redirect('/admin');
   }
 };
+
+// Admin: ma'lum foydalanuvchi bilan chat tarixini JSON ko'rinishida olish
+exports.getUserMessages = async (req, res) => {
+  try {
+    const userId = req.query.user;
+    if (!userId) {
+      return res.status(400).json({ error: 'user parametri kerak' });
+    }
+
+    const user = await User.findById(userId).select('name email').lean();
+    if (!user) {
+      return res.status(404).json({ error: 'Foydalanuvchi topilmadi' });
+    }
+
+    const messages = await Message.find({ user: userId })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return res.json({ user, messages });
+  } catch (err) {
+    console.error('Admin getUserMessages xatosi:', err.message);
+    return res.status(500).json({ error: 'Server xatosi' });
+  }
+};
+
+// Admin: ma'lum foydalanuvchiga xabar yuborish
+exports.sendMessageToUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { text, imageUrl } = req.body || {};
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId kerak' });
+    }
+
+    const cleanText = text ? text.toString().trim() : '';
+    const cleanImage = imageUrl ? imageUrl.toString().trim() : '';
+
+    if (!cleanText && !cleanImage) {
+      return res.status(400).json({ error: 'Xabar matni yoki rasm bo‘lishi kerak' });
+    }
+
+    const user = await User.findById(userId).select('_id').lean();
+    if (!user) {
+      return res.status(404).json({ error: 'Foydalanuvchi topilmadi' });
+    }
+
+    const message = await Message.create({
+      user: userId,
+      from: 'admin',
+      text: cleanText || undefined,
+      imageUrl: cleanImage || undefined
+    });
+
+    return res.status(201).json({ message });
+  } catch (err) {
+    console.error('Admin sendMessageToUser xatosi:', err.message);
+    return res.status(500).json({ error: 'Server xatosi' });
+  }
+};
