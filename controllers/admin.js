@@ -1,6 +1,7 @@
 const { isValidAdminCode, getCurrentAdminCode } = require('../utils/adminCode');
 const User = require('../models/User');
 const Test = require('../models/Test');
+const Message = require('../models/Message');
 
 
 // Admin sessiyasini tekshiruvchi middleware
