@@ -51,10 +51,14 @@
                 <% if (passed) { %>
                   <div class="test-video-wrapper">
                     <h3>Tabriklaymiz! Siz testni muvaffaqiyatli topshirdingiz.</h3>
-                    <% if (test.videoLink) { %>
+                    <% if (test.videoLink) { 
+                      const rawVideo = test.videoLink || '';
+                      const noQueryVideo = rawVideo.split('?')[0];
+                      const videoSrc = noQueryVideo.replace('/view', '/preview');
+                    %>
                       <p>Quyidagi videoni tomosha qilib, mavzuni yanada mustahkamlab oling.</p>
                       <div class="test-video-embed">
-                        <iframe src="<%= test.videoLink %>" frameborder="0" allowfullscreen></iframe>
+                        <iframe src="<%= videoSrc %>" frameborder="0" allowfullscreen></iframe>
                       </div>
                     <% } else { %>
                       <p>Bu test uchun hozircha video biriktirilmagan.</p>

@@ -31,8 +31,12 @@
             <div class="test-body">
               <div class="test-pdf">
                 <div class="test-pdf-inner">
-                  <% if (test.pdfLink) { %>
-                    <iframe id="testPdfFrame" src="<%= test.pdfLink %>" frameborder="0"></iframe>
+                  <% if (test.pdfLink) { 
+                    const rawPdf = test.pdfLink || '';
+                    const noQueryPdf = rawPdf.split('?')[0];
+                    const pdfSrc = noQueryPdf.replace('/view', '/preview');
+                  %>
+                    <iframe id="testPdfFrame" src="<%= pdfSrc %>" frameborder="0"></iframe>
                   <% } %>
                 </div>
                 <p class="test-pdf-hint">PDF ichida savollar matnini ko‘rib, pastdagi raqamlar orqali yopiq savollar (A/B/C/D) javoblarini tanlang.</p>
