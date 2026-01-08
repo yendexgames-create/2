@@ -3,39 +3,27 @@
 
 <main>
   <section class="hero" id="hero">
-    <div class="hero-gradient"></div>
-    <div class="hero-inner" data-aos="fade-up">
-      <div class="hero-text">
-        <h1 class="hero-title">Math Club — <span>Matematikani oson o‘rganing</span></h1>
-        <p class="hero-subtitle">Premium darajadagi darslar, kuchli o‘qituvchilar va aniq natijalar.</p>
-        <div class="hero-cta">
-          <a href="/register-course" class="btn-primary btn-bounce">Kursga yozilish</a>
-          <a href="/about" class="btn-outline">Ko‘proq ma’lumot</a>
+    <div class="hero-bg-orb"></div>
+
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge" data-animate="fade-up">
+          Math Learning Platform
         </div>
-        <div class="hero-stats" data-aos="fade-up" data-aos-delay="150">
-          <div class="stat-card">
-            <span class="stat-number" data-count="500">0</span>
-            <span class="stat-label">+ o‘quvchi</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number" data-count="95">0</span>
-            <span class="stat-label">% o‘rtacha natija</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number" data-count="10">0</span>
-            <span class="stat-label">yillik tajriba</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-visual" data-aos="fade-left">
-        <div class="math-formulas">
-          <span>√x</span>
-          <span>∫ f(x) dx</span>
-          <span>π</span>
-          <span>Σ</span>
-        </div>
-        <div class="hero-card">
-          <p>Har bir o‘quvchi uchun individual yondashuv.</p>
+
+        <h1 class="hero-title" data-animate="fade-up" data-delay="0.1">
+          Learn Math<br />
+          The Smart Way
+        </h1>
+
+        <p class="hero-subtitle" data-animate="fade-up" data-delay="0.25">
+          Premium darslar, adaptiv testlar va jonli statistika bilan matematikani
+          zamonaviy uslubda o‘rganing.
+        </p>
+
+        <div class="hero-actions" data-animate="fade-up" data-delay="0.4">
+          <a href="/register-course" class="btn btn-primary">Get Started</a>
+          <a href="#results" class="btn btn-secondary">View Results</a>
         </div>
       </div>
     </div>
@@ -124,5 +112,53 @@
     </div>
   </section>
 </main>
+
+<script>
+  (function () {
+    var items = document.querySelectorAll('[data-animate]');
+    var orb = document.querySelector('.hero-bg-orb');
+
+    if (!('IntersectionObserver' in window)) {
+      items.forEach(function (el) {
+        el.classList.add('is-visible');
+      });
+      if (orb) orb.classList.add('hero-bg-zoomed');
+      return;
+    }
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            var delayAttr = el.getAttribute('data-delay');
+            if (delayAttr) {
+              el.style.setProperty('--delay', delayAttr + 's');
+            }
+            el.classList.add('is-visible');
+            observer.unobserve(el);
+          }
+        });
+
+        var hero = document.getElementById('hero');
+        if (hero && orb) {
+          var rect = hero.getBoundingClientRect();
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          var heroInView = rect.top < vh * 0.6 && rect.bottom > vh * 0.2;
+          if (heroInView) {
+            orb.classList.add('hero-bg-zoomed');
+          } else {
+            orb.classList.remove('hero-bg-zoomed');
+          }
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    items.forEach(function (el) {
+      observer.observe(el);
+    });
+  })();
+</script>
 
 <%- include('partials/footer') %>
