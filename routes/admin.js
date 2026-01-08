@@ -11,7 +11,9 @@ const {
   createTest,
   deleteTest,
   editTestForm,
-  updateTest
+  updateTest,
+  getUserMessages,
+  sendMessageToUser
 } = require('../controllers/admin');
 
 // Login sahifasi
@@ -33,5 +35,9 @@ router.post('/tests', ensureAdmin, createTest);
 router.post('/tests/:id/delete', ensureAdmin, deleteTest);
 router.get('/tests/:id/edit', ensureAdmin, editTestForm);
 router.post('/tests/:id/edit', ensureAdmin, updateTest);
+
+// Admin chat API
+router.get('/api/messages', ensureAdmin, getUserMessages);
+router.post('/api/messages/:userId', ensureAdmin, sendMessageToUser);
 
 module.exports = router;

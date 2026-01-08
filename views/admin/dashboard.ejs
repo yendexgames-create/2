@@ -196,9 +196,32 @@
           <h2>Foydalanuvchilar bilan xabarlar</h2>
           <p class="admin-section-desc">
             Bu yerda o'quvchilardan kelgan xabarlar va har bir foydalanuvchi bilan yozishmalar (chat) boshqariladi.
-            Admin kerakli foydalanuvchini tanlab, bevosita shu paneldan xabar yozishi mumkin bo'ladi.
           </p>
-          <div class="admin-placeholder">Chat va xabarlar bo'limi keyingi bosqichda ulab beriladi.</div>
+
+          <% if (usersWithMessages && usersWithMessages.length) { %>
+            <div class="admin-users-table-wrapper">
+              <table class="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>Foydalanuvchi</th>
+                    <th>Email</th>
+                    <th>Testlar soni</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% usersWithMessages.forEach(function(u){ %>
+                    <tr>
+                      <td><%= u.name %></td>
+                      <td><%= u.email %></td>
+                      <td><%= u.testsCount %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="admin-placeholder">Hozircha xabar yuborgan foydalanuvchi topilmadi.</div>
+          <% } %>
         </section>
       </div>
     </div>

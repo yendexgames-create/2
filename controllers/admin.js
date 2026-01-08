@@ -66,9 +66,17 @@ exports.showDashboard = async (req, res) => {
       };
     });
 
+    // Xabar yuborgan foydalanuvchilar ro'yxati
+    const messageUserIds = await Message.distinct('user');
+    const messageUserIdStrings = messageUserIds.map((id) => String(id));
+    const usersWithMessages = usersWithStats.filter((u) =>
+      messageUserIdStrings.includes(String(u._id))
+    );
+
     res.render('admin/dashboard', {
       title: 'Admin panel',
       users: usersWithStats,
+      usersWithMessages,
       tests,
       testError: req.query.testError || null
     });
