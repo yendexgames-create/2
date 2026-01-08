@@ -92,6 +92,30 @@
       progressBar.style.width = percent + '%';
     }
 
+    function recalcProgress() {
+      if (!progressBar) return;
+
+      // Yopiq savollar bo'yicha javoblanganlar soni
+      const closedAnswered = Array.isArray(currentAnswers)
+        ? currentAnswers.filter(function (a) { return !!a; }).length
+        : 0;
+
+      // Ochiq savollar bo'yicha javoblanganlar soni
+      let openAnswered = 0;
+      if (openQuestionsPanel) {
+        const items = openQuestionsPanel.querySelectorAll('.open-question-item');
+        items.forEach(function (item) {
+          const textarea = item.querySelector('.open-question-input');
+          const val = textarea && textarea.value ? textarea.value.toString().trim() : '';
+          if (val) openAnswered++;
+        });
+      }
+
+      const totalAnswered = closedAnswered + openAnswered;
+      const totalQ = totalQuestions || (closedCount + openCount) || 0;
+      updateProgress(totalAnswered, totalQ);
+    }
+
     function setCurrentIndex(idx) {
       currentIndex = idx;
       if (!questionBadges || !answerControls) return;
@@ -187,6 +211,9 @@
         const textarea = document.createElement('textarea');
         textarea.className = 'open-question-input';
         textarea.rows = 2;
+        textarea.addEventListener('input', function () {
+          recalcProgress();
+        });
         wrapper.appendChild(label);
         wrapper.appendChild(textarea);
         openQuestionsPanel.appendChild(wrapper);
@@ -195,7 +222,7 @@
 
     if (closedCount > 0) {
       renderBadges(totalQuestions || closedCount, closedCount);
-      updateProgress(0, closedCount);
+      recalcProgress();
     } else if (testResult) {
       testResult.textContent = 'Bu test uchun yopiq (A/B/C/D) savollar sozlanmagan.';
     }
@@ -225,8 +252,7 @@
               b.classList.toggle('selected', b === btn);
             });
           }
-          const answeredCount = currentAnswers.filter((a) => !!a).length;
-          updateProgress(answeredCount, closedCount);
+          recalcProgress();
         });
       });
     }
