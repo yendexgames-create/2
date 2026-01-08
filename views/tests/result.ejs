@@ -99,13 +99,15 @@
 
       // 100% bo'lsa qo'shimcha kuchli portlash (salyut)
       if (scoreVal === 100) {
-        confetti(Object.assign({}, defaults, {
-          particleCount: 160,
-          startVelocity: 60,
-          spread: 360,
-          origin: { x: 0.5, y: 0.4 },
-          scalar: 1.4
-        }));
+        setTimeout(function () {
+          confetti(Object.assign({}, defaults, {
+            particleCount: 220,
+            startVelocity: 70,
+            spread: 360,
+            origin: { x: 0.5, y: 0.35 },
+            scalar: 1.8
+          }));
+        }, 400);
       }
 
       function randomInRange(min, max) {
