@@ -132,6 +132,9 @@ a { text-decoration: none; color: inherit; }
 /* Test yechish sahifasi uchun: faqat test container keng ko‘rinishda */
 .tests-solve-page .tests-layout { grid-template-columns: minmax(0, 1fr); }
 
+/* Test natijasi sahifasi uchun: yagona keng ustun */
+.tests-result-page .tests-layout { grid-template-columns: minmax(0, 1fr); }
+
 .tests-list { position: relative; overflow: hidden; }
 .tests-list-title { font-size: 22px; margin-bottom: 10px; }
 .tests-list-desc { font-size: 15px; color: #56756a; margin-bottom: 16px; }

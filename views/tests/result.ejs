@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
 <%- include('../partials/navbar') %>
-<main class="page" data-aos="fade-up">
+<main class="page tests-result-page" data-aos="fade-up" data-score="<%= result && typeof result.score === 'number' ? result.score : 0 %>">
   <section class="section">
     <div class="section-inner">
       <% if (!test) { %>
@@ -84,6 +84,29 @@
       var duration = 6000; // 6 soniya davomida zar
       var animationEnd = Date.now() + duration;
       var defaults = { startVelocity: 30, spread: 360, ticks: 40, zIndex: 9999 };
+
+      var pageEl = document.querySelector('.tests-result-page');
+      var scoreVal = 0;
+      if (pageEl) {
+        var rawScore = pageEl.getAttribute('data-score');
+        if (rawScore) {
+          var parsed = parseInt(rawScore, 10);
+          if (!isNaN(parsed)) {
+            scoreVal = parsed;
+          }
+        }
+      }
+
+      // 100% bo'lsa qo'shimcha kuchli portlash (salyut)
+      if (scoreVal === 100) {
+        confetti(Object.assign({}, defaults, {
+          particleCount: 160,
+          startVelocity: 60,
+          spread: 360,
+          origin: { x: 0.5, y: 0.4 },
+          scalar: 1.4
+        }));
+      }
 
       function randomInRange(min, max) {
         return Math.random() * (max - min) + min;
