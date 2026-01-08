@@ -205,7 +205,7 @@ a { text-decoration: none; color: inherit; }
 .test-result { font-size: 16px; color: #0d3b2e; }
 
 /* Test natijasi blokini kengaytirish va animatsiyalar */
-.test-result-block { position: relative; max-width: 640px; margin: 0 auto; }
+.test-result-block { position: relative; max-width: 800px; margin: 0 auto; }
 .result-summary { position: relative; z-index: 1; }
 
 .result-confetti {
