@@ -238,6 +238,11 @@ a { text-decoration: none; color: inherit; }
   pointer-events: none;
   overflow: hidden;
 }
+.result-fireworks canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 .result-fireworks::before,
 .result-fireworks::after {
   content: "";
