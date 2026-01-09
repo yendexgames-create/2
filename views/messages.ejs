@@ -1,22 +1,127 @@
 <%- include('partials/head') %>
 <%- include('partials/navbar') %>
-<main class="page" data-aos="fade-up">
+<main class="page messages-page" data-aos="fade-up">
   <section class="section">
     <div class="section-inner">
-      <h1 class="section-title">Adminga xabar yozish</h1>
-      <div class="card" style="max-width: 640px; margin: 0 auto;">
-        <p style="font-size:14px;color:#56756a;margin-bottom:8px;">
-          Bu yerda adminga o'z savolingizni yoki fikringizni yozib qoldirishingiz mumkin.
-        </p>
-        <form method="POST" action="/messages/api" class="form-grid">
-          <div class="form-group">
-            <label for="messageText">Xabar matni</label>
-            <textarea id="messageText" name="text" rows="4" required></textarea>
+      <div class="messages-layout">
+        <div class="messages-card">
+          <div class="messages-header">
+            <div>
+              <h1 class="messages-title">Adminga xabar yozish</h1>
+              <p class="messages-subtitle">Savollaringizni shu yerda yozib qoldiring, admin sizga shu chat ichida javob beradi.</p>
+            </div>
           </div>
-          <button type="submit" class="btn-primary">Yuborish</button>
-        </form>
+
+          <div class="messages-body" id="userChatBody">
+            <div class="messages-empty" id="userChatEmpty">Hozircha xabarlar yo'q. Birinchi bo'lib xabar yozing 😊</div>
+          </div>
+
+          <form id="userChatForm" class="messages-form">
+            <textarea
+              id="userChatInput"
+              name="text"
+              rows="2"
+              placeholder="Xabaringizni yozing..."
+              required
+            ></textarea>
+            <button type="submit" class="btn-primary messages-send-btn">Yuborish</button>
+          </form>
+        </div>
       </div>
     </div>
   </section>
 </main>
+<script>
+  (function () {
+    var chatBody = document.getElementById('userChatBody');
+    var chatForm = document.getElementById('userChatForm');
+    var chatInput = document.getElementById('userChatInput');
+    var emptyState = document.getElementById('userChatEmpty');
+
+    function renderMessages(list) {
+      if (!chatBody) return;
+      chatBody.innerHTML = '';
+      if (!list || !list.length) {
+        if (emptyState) {
+          emptyState.style.display = 'block';
+          chatBody.appendChild(emptyState);
+        }
+        return;
+      }
+
+      if (emptyState) {
+        emptyState.style.display = 'none';
+      }
+
+      list.forEach(function (m) {
+        var wrap = document.createElement('div');
+        wrap.className = 'messages-item messages-item-' + (m.from === 'user' ? 'self' : 'admin');
+
+        var bubble = document.createElement('div');
+        bubble.className = 'messages-bubble';
+        if (m.text) {
+          bubble.textContent = m.text;
+        } else if (m.imageUrl) {
+          var img = document.createElement('img');
+          img.src = m.imageUrl;
+          img.className = 'messages-image';
+          bubble.appendChild(img);
+        }
+
+        wrap.appendChild(bubble);
+        chatBody.appendChild(wrap);
+      });
+
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function loadThread() {
+      if (!chatBody) return;
+      chatBody.classList.add('messages-body-loading');
+      fetch('/messages/api/thread')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          chatBody.classList.remove('messages-body-loading');
+          if (!data || !Array.isArray(data.messages)) {
+            renderMessages([]);
+            return;
+          }
+          renderMessages(data.messages);
+        })
+        .catch(function () {
+          chatBody.classList.remove('messages-body-loading');
+          renderMessages([]);
+        });
+    }
+
+    if (chatForm && chatInput) {
+      chatForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var text = (chatInput.value || '').trim();
+        if (!text) return;
+
+        chatForm.classList.add('messages-form-sending');
+
+        fetch('/messages/api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body: 'text=' + encodeURIComponent(text)
+        })
+          .then(function (res) { return res.json(); })
+          .then(function () {
+            chatInput.value = '';
+            chatForm.classList.remove('messages-form-sending');
+            loadThread();
+          })
+          .catch(function () {
+            chatForm.classList.remove('messages-form-sending');
+          });
+      });
+    }
+
+    loadThread();
+  })();
+</script>
 <%- include('partials/footer') %>

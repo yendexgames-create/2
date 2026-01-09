@@ -100,6 +100,146 @@ a { text-decoration: none; color: inherit; }
 .results-list { margin-top: 10px; list-style: none; font-size: 14px; }
 .results-list li { padding: 6px 0; border-bottom: 1px dashed #d5e6df; }
 
+/* Foydalanuvchi – Adminga xabar yozish (messages) sahifasi */
+.messages-page .section-inner {
+  max-width: 840px;
+}
+
+.messages-layout {
+  display: flex;
+  justify-content: center;
+}
+
+.messages-card {
+  width: 100%;
+  max-width: 720px;
+  border-radius: 22px;
+  background: radial-gradient(circle at top left, #f5fffb, #ffffff);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-header {
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid #e5f1ec;
+}
+
+.messages-title {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.messages-subtitle {
+  font-size: 13px;
+  color: #56756a;
+}
+
+.messages-body {
+  position: relative;
+  flex: 1;
+  padding: 12px 14px 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: radial-gradient(circle at top left, #f3fbf7, #ffffff);
+}
+
+.messages-body-loading::after {
+  content: 'Yuklanmoqda...';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #56756a;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.84), rgba(255,255,255,0.96));
+}
+
+.messages-empty {
+  font-size: 13px;
+  color: #999fa5;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.messages-item {
+  display: flex;
+  margin-bottom: 6px;
+}
+
+.messages-item-self {
+  justify-content: flex-end;
+}
+
+.messages-item-admin {
+  justify-content: flex-start;
+}
+
+.messages-bubble {
+  max-width: 80%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+.messages-item-self .messages-bubble {
+  background: linear-gradient(135deg, #0fbf84, #0d3b2e);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.messages-item-admin .messages-bubble {
+  background: #ffffff;
+  color: #0d3b2e;
+  border-bottom-left-radius: 4px;
+}
+
+.messages-image {
+  max-width: 60%;
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
+
+.messages-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  border-top: 1px solid #e5f1ec;
+  background: #ffffff;
+}
+
+.messages-form textarea {
+  flex: 1;
+  resize: none;
+  border-radius: 14px;
+  border: 1px solid #d5e6df;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.messages-send-btn {
+  white-space: nowrap;
+}
+
+.messages-form-sending .messages-send-btn {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .messages-body {
+    max-height: 360px;
+  }
+
+  .messages-card {
+    border-radius: 18px;
+  }
+}
+
 /* Leaderboard user activity */
 .profile-grid .lb-name { font-size: 22px; }
 .profile-grid .lb-meta { font-size: 14px; }
