@@ -199,46 +199,27 @@
           </p>
 
           <% if (usersWithMessages && usersWithMessages.length) { %>
-            <div class="admin-messages-layout">
-              <div class="admin-messages-users">
-                <div class="admin-users-table-wrapper">
-                  <table class="admin-users-table">
-                    <thead>
-                      <tr>
-                        <th>Foydalanuvchi</th>
-                        <th>Email</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% usersWithMessages.forEach(function(u){ %>
-                        <tr
-                          class="admin-message-user-row"
-                          data-user-id="<%= u._id %>"
-                          data-user-name="<%= u.name %>"
-                        >
-                          <td><%= u.name %></td>
-                          <td><%= u.email %></td>
-                        </tr>
-                      <% }) %>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div class="admin-messages-chat">
-                <div class="admin-messages-chat-header" id="adminChatHeader">
-                  Foydalanuvchini tanlang
-                </div>
-                <div class="admin-messages-chat-body" id="adminChatBody"></div>
-                <form id="adminChatForm" class="admin-messages-chat-form">
-                  <textarea
-                    id="adminChatInput"
-                    rows="2"
-                    placeholder="Xabar yozing..."
-                  ></textarea>
-                  <button type="submit" class="btn-primary admin-btn-small">Yuborish</button>
-                </form>
-              </div>
+            <div class="admin-users-table-wrapper">
+              <table class="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>Foydalanuvchi</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% usersWithMessages.forEach(function(u){ %>
+                    <tr
+                      class="admin-message-user-row"
+                      data-user-id="<%= u._id %>"
+                      data-user-name="<%= u.name %>"
+                    >
+                      <td><%= u.name %></td>
+                      <td><%= u.email %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
             </div>
           <% } else { %>
             <div class="admin-placeholder">Hozircha xabar yuborgan foydalanuvchi topilmadi.</div>
@@ -249,6 +230,27 @@
   </section>
 </main>
 
+<div id="admin-chat-modal" class="admin-modal admin-section-hidden admin-chat-modal">
+  <div id="admin-chat-backdrop" class="admin-modal-backdrop"></div>
+  <div class="admin-chat-modal-content">
+    <div class="admin-chat-modal-header">
+      <div class="admin-chat-modal-title">
+        <span id="adminChatUserName">Foydalanuvchi</span> bilan chat
+      </div>
+      <button type="button" id="admin-chat-close" class="admin-modal-close">×</button>
+    </div>
+    <div class="admin-messages-chat-body" id="adminChatBody"></div>
+    <form id="adminChatForm" class="admin-messages-chat-form">
+      <textarea
+        id="adminChatInput"
+        rows="2"
+        placeholder="Xabar yozing..."
+      ></textarea>
+      <button type="submit" class="btn-primary admin-btn-small">Yuborish</button>
+    </form>
+  </div>
+</div>
+
 <script>
   // Admin panelda bo'limlarni tab kabi almashtirish
   (function() {
@@ -257,7 +259,7 @@
     var addTestBtn = document.getElementById('admin-tests-add-btn');
     var testsModal = document.getElementById('admin-tests-modal');
     var testsClose = document.getElementById('admin-tests-close');
-    var testsBackdrop = document.querySelector('.admin-modal-backdrop');
+    var testsBackdrop = document.querySelector('#admin-tests-modal .admin-modal-backdrop');
     var stepBadges = document.querySelectorAll('.admin-modal-steps .step-badge');
     var steps = document.querySelectorAll('.admin-test-step');
     var nextBtn = document.getElementById('admin-tests-next');
@@ -333,9 +335,12 @@
       });
     }
 
-    // Admin xabarlar bo'limi uchun oddiy chat funksiyasi
+    // Admin xabarlar bo'limi uchun chat modal funksiyasi
     var userRows = document.querySelectorAll('.admin-message-user-row');
-    var chatHeader = document.getElementById('adminChatHeader');
+    var chatModal = document.getElementById('admin-chat-modal');
+    var chatBackdrop = document.getElementById('admin-chat-backdrop');
+    var chatClose = document.getElementById('admin-chat-close');
+    var chatUserName = document.getElementById('adminChatUserName');
     var chatBody = document.getElementById('adminChatBody');
     var chatForm = document.getElementById('adminChatForm');
     var chatInput = document.getElementById('adminChatInput');
@@ -369,11 +374,12 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function loadChat(userId, userName) {
-      if (!chatHeader || !chatBody) return;
+    function openChatModal(userId, userName) {
+      if (!chatModal || !chatBody || !chatUserName) return;
       currentChatUserId = userId;
-      chatHeader.textContent = userName + ' bilan chat';
+      chatUserName.textContent = userName;
       chatBody.innerHTML = 'Yuklanmoqda...';
+      chatModal.classList.remove('admin-section-hidden');
 
       fetch('/admin/api/messages?user=' + encodeURIComponent(userId))
         .then(function (res) { return res.json(); })
@@ -389,7 +395,7 @@
         });
     }
 
-    if (userRows && userRows.length && chatBody && chatHeader) {
+    if (userRows && userRows.length && chatBody && chatModal) {
       userRows.forEach(function (row) {
         row.addEventListener('click', function () {
           var userId = this.getAttribute('data-user-id');
@@ -399,8 +405,26 @@
           userRows.forEach(function (r) { r.classList.remove('admin-message-user-row-active'); });
           this.classList.add('admin-message-user-row-active');
 
-          loadChat(userId, userName);
+          openChatModal(userId, userName);
         });
+      });
+    }
+
+    function closeChatModal() {
+      if (!chatModal) return;
+      chatModal.classList.add('admin-section-hidden');
+      currentChatUserId = null;
+    }
+
+    if (chatClose && chatModal) {
+      chatClose.addEventListener('click', function () {
+        closeChatModal();
+      });
+    }
+
+    if (chatBackdrop && chatModal) {
+      chatBackdrop.addEventListener('click', function () {
+        closeChatModal();
       });
     }
 
@@ -422,17 +446,15 @@
           .then(function (data) {
             chatInput.value = '';
             if (data && data.message) {
-              // yangi xabarni oxiriga qo'shamiz
-              renderMessages((function () {
-                var items = [];
-                chatBody.querySelectorAll('.admin-chat-message').forEach(function (node) {
-                  // eski DOM'dan qayta o'qish o'rniga, oddiygina yangisini oxiriga qo'shamiz
-                  items.push({});
-                });
-                // oddiy usul: qayta yuklab qo'yish
-                loadChat(currentChatUserId, chatHeader.textContent.replace(' bilan chat', ''));
-                return items;
-              })());
+              // oddiy usul: butun chatni qayta yuklaymiz
+              fetch('/admin/api/messages?user=' + encodeURIComponent(currentChatUserId))
+                .then(function (res) { return res.json(); })
+                .then(function (payload) {
+                  if (payload && Array.isArray(payload.messages)) {
+                    renderMessages(payload.messages);
+                  }
+                })
+                .catch(function () {});
             }
           })
           .catch(function () {
