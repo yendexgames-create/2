@@ -18,9 +18,14 @@ exports.uploadChatImage = async (req, res) => {
       stream.end(req.file.buffer);
     });
 
+    if (!result || !result.secure_url) {
+      console.error('uploadChatImage: Cloudinary javobi noto\'g\'ri:', result);
+      return res.status(500).json({ error: 'Rasm yuklash amalga oshmadi' });
+    }
+
     return res.json({ url: result.secure_url });
   } catch (err) {
-    console.error('uploadChatImage xatosi:', err.message);
-    return res.status(500).json({ error: 'Rasm yuklashda server xatosi' });
+    console.error('uploadChatImage xatosi:', err);
+    return res.status(500).json({ error: 'Rasm yuklashda server xatosi', message: err.message || null });
   }
 };

@@ -16,6 +16,13 @@
             <div class="messages-empty" id="userChatEmpty">Hozircha xabarlar yo'q. Birinchi bo'lib xabar yozing 😊</div>
           </div>
 
+          <div id="userChatPreview" class="messages-preview messages-preview-hidden">
+            <div class="messages-preview-inner">
+              <img id="userChatPreviewImage" class="messages-preview-image" alt="Yuklanayotgan rasm" />
+              <button type="button" id="userChatPreviewRemove" class="messages-preview-remove">×</button>
+            </div>
+          </div>
+
           <form id="userChatForm" class="messages-form">
             <label class="messages-attach-btn">
               <input type="file" id="userChatImage" accept="image/*" hidden />
@@ -40,6 +47,9 @@
     var chatForm = document.getElementById('userChatForm');
     var chatInput = document.getElementById('userChatInput');
     var chatImageInput = document.getElementById('userChatImage');
+    var previewWrap = document.getElementById('userChatPreview');
+    var previewImage = document.getElementById('userChatPreviewImage');
+    var previewRemove = document.getElementById('userChatPreviewRemove');
     var emptyState = document.getElementById('userChatEmpty');
 
     function renderMessages(list) {
@@ -106,6 +116,40 @@
         });
     }
 
+    function clearPreview() {
+      if (previewWrap) {
+        previewWrap.classList.add('messages-preview-hidden');
+      }
+      if (previewImage) {
+        previewImage.src = '';
+      }
+      if (chatImageInput) {
+        chatImageInput.value = '';
+      }
+    }
+
+    if (chatImageInput && previewWrap && previewImage) {
+      chatImageInput.addEventListener('change', function () {
+        if (!chatImageInput.files || !chatImageInput.files[0]) {
+          clearPreview();
+          return;
+        }
+        var file = chatImageInput.files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+          previewWrap.classList.remove('messages-preview-hidden');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (previewRemove) {
+      previewRemove.addEventListener('click', function () {
+        clearPreview();
+      });
+    }
+
     function uploadImageIfNeeded() {
       return new Promise(function (resolve) {
         if (!chatImageInput || !chatImageInput.files || !chatImageInput.files[0]) {
@@ -122,6 +166,11 @@
         })
           .then(function (res) { return res.json(); })
           .then(function (data) {
+            if (data && data.error && !data.url) {
+              alert(data.error || 'Rasm yuklashda xato. Iltimos, birozdan so\'ng qayta urinib ko\'ring.');
+              clearPreview();
+              return resolve(null);
+            }
             chatImageInput.value = '';
             if (data && data.url) {
               resolve(data.url);

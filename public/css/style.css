@@ -212,6 +212,41 @@ a { text-decoration: none; color: inherit; }
   background: #ffffff;
 }
 
+.messages-preview {
+  padding: 6px 14px 0;
+}
+
+.messages-preview-hidden {
+  display: none;
+}
+
+.messages-preview-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 4px;
+  border-radius: 10px;
+  background: rgba(15, 191, 132, 0.06);
+  border: 1px solid #d5e6df;
+}
+
+.messages-preview-image {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.messages-preview-remove {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 4px;
+  color: #56756a;
+}
+
 .messages-attach-btn {
   display: inline-flex;
   align-items: center;

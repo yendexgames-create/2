@@ -240,6 +240,14 @@
       <button type="button" id="admin-chat-close" class="admin-modal-close">×</button>
     </div>
     <div class="admin-messages-chat-body" id="adminChatBody"></div>
+
+    <div id="adminChatPreview" class="messages-preview messages-preview-hidden">
+      <div class="messages-preview-inner">
+        <img id="adminChatPreviewImage" class="messages-preview-image" alt="Yuklanayotgan rasm" />
+        <button type="button" id="adminChatPreviewRemove" class="messages-preview-remove">×</button>
+      </div>
+    </div>
+
     <form id="adminChatForm" class="admin-messages-chat-form">
       <label class="messages-attach-btn">
         <input type="file" id="adminChatImage" accept="image/*" hidden />
@@ -349,6 +357,9 @@
     var chatForm = document.getElementById('adminChatForm');
     var chatInput = document.getElementById('adminChatInput');
     var chatImageInput = document.getElementById('adminChatImage');
+    var chatPreviewWrap = document.getElementById('adminChatPreview');
+    var chatPreviewImage = document.getElementById('adminChatPreviewImage');
+    var chatPreviewRemove = document.getElementById('adminChatPreviewRemove');
     var currentChatUserId = null;
 
     function renderMessages(list) {
@@ -433,6 +444,40 @@
       });
     }
 
+    function clearAdminPreview() {
+      if (chatPreviewWrap) {
+        chatPreviewWrap.classList.add('messages-preview-hidden');
+      }
+      if (chatPreviewImage) {
+        chatPreviewImage.src = '';
+      }
+      if (chatImageInput) {
+        chatImageInput.value = '';
+      }
+    }
+
+    if (chatImageInput && chatPreviewWrap && chatPreviewImage) {
+      chatImageInput.addEventListener('change', function () {
+        if (!chatImageInput.files || !chatImageInput.files[0]) {
+          clearAdminPreview();
+          return;
+        }
+        var file = chatImageInput.files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          chatPreviewImage.src = e.target.result;
+          chatPreviewWrap.classList.remove('messages-preview-hidden');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (chatPreviewRemove) {
+      chatPreviewRemove.addEventListener('click', function () {
+        clearAdminPreview();
+      });
+    }
+
     function uploadAdminImageIfNeeded() {
       return new Promise(function (resolve) {
         if (!chatImageInput || !chatImageInput.files || !chatImageInput.files[0]) {
@@ -449,6 +494,11 @@
         })
           .then(function (res) { return res.json(); })
           .then(function (data) {
+            if (data && data.error && !data.url) {
+              alert(data.error || 'Rasm yuklashda xato. Iltimos, birozdan so\'ng qayta urinib ko\'ring.');
+              clearAdminPreview();
+              return resolve(null);
+            }
             chatImageInput.value = '';
             if (data && data.url) {
               resolve(data.url);
