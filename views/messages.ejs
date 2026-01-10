@@ -63,9 +63,17 @@
 
         var bubble = document.createElement('div');
         bubble.className = 'messages-bubble';
-        if (m.text) {
-          bubble.textContent = m.text;
-        } else if (m.imageUrl) {
+
+        var hasText = m.text && String(m.text).trim().length > 0;
+        var hasImage = !!m.imageUrl;
+
+        if (hasText) {
+          var textNode = document.createElement('div');
+          textNode.textContent = m.text;
+          bubble.appendChild(textNode);
+        }
+
+        if (hasImage) {
           var img = document.createElement('img');
           img.src = m.imageUrl;
           img.className = 'messages-image';
