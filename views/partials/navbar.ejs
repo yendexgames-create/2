@@ -39,85 +39,79 @@
       <% } %>
     </div>
 
-    <button type="button" class="nav-toggle" id="navToggle">
-      <span></span>
-      <span></span>
-      <span></span>
+    <!-- Mobil uchun hamburger tugma -->
+    <button class="nav-toggle" type="button" aria-label="Menyuni ochish" aria-expanded="false">
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
+      <span class="nav-toggle-line"></span>
     </button>
-  </div>
-
-  <div class="nav-drawer" id="navDrawer">
-    <div class="nav-drawer-backdrop" id="navDrawerBackdrop"></div>
-    <div class="nav-drawer-panel">
-      <div class="nav-drawer-header">
-        <span class="nav-drawer-title">Menyu</span>
-        <button type="button" class="nav-drawer-close" id="navDrawerClose">×</button>
-      </div>
-      <nav class="nav-drawer-links">
-        <a href="/">Bosh sahifa</a>
-        <a href="/about">Biz haqimizda</a>
-        <a href="/teacher">O‘qituvchi</a>
-        <a href="/results">Natijalar</a>
-        <a href="/register-course">Kursga yozilish</a>
-        <% if (user) { %>
-          <a href="/tests">Testlar</a>
-          <a href="/leaderboard">Yetakchilar</a>
-          <a href="/messages">Adminga xabarlashish</a>
-          <a href="/profile">Shaxsiy kabinet</a>
-          <a href="/auth/logout">Chiqish</a>
-        <% } else { %>
-          <a href="/auth/login">Kirish</a>
-          <a href="/auth/register">Ro‘yxatdan o‘tish</a>
-        <% } %>
-      </nav>
-    </div>
   </div>
 </header>
 
+<!-- Mobil menyu overlay va panel -->
+<div class="nav-mobile-overlay"></div>
+<nav class="nav-mobile" aria-hidden="true">
+  <div class="nav-mobile-inner">
+    <a href="/" class="nav-mobile-link">Bosh sahifa</a>
+    <a href="/about" class="nav-mobile-link">Biz haqimizda</a>
+    <a href="/teacher" class="nav-mobile-link">O‘qituvchi</a>
+    <a href="/results" class="nav-mobile-link">Natijalar</a>
+    <a href="/register-course" class="nav-mobile-link">Kursga yozilish</a>
+    <% if (user) { %>
+      <a href="/tests" class="nav-mobile-link">Testlar</a>
+      <a href="/leaderboard" class="nav-mobile-link">Yetakchilar</a>
+      <a href="/messages" class="nav-mobile-link">Adminga xabarlashish</a>
+      <a href="/profile" class="nav-mobile-link">Shaxsiy kabinet</a>
+      <a href="/auth/logout" class="nav-mobile-link">Chiqish</a>
+    <% } else { %>
+      <a href="/auth/login" class="nav-mobile-link">Kirish</a>
+      <a href="/auth/register" class="nav-mobile-link">Ro‘yxatdan o‘tish</a>
+    <% } %>
+  </div>
+</nav>
+
 <script>
   (function () {
-    var toggle = document.getElementById('navToggle');
-    var drawer = document.getElementById('navDrawer');
-    var backdrop = document.getElementById('navDrawerBackdrop');
-    var closeBtn = document.getElementById('navDrawerClose');
+    var toggle = document.querySelector('.nav-toggle');
+    var mobileMenu = document.querySelector('.nav-mobile');
+    var mobileOverlay = document.querySelector('.nav-mobile-overlay');
+    var mobileLinks = document.querySelectorAll('.nav-mobile-link');
 
-    function openDrawer() {
-      if (!drawer) return;
-      drawer.classList.add('open');
-      document.body.classList.add('nav-drawer-open');
+    if (!toggle || !mobileMenu || !mobileOverlay) return;
+
+    function openMenu() {
+      toggle.classList.add('nav-toggle-open');
+      mobileMenu.classList.add('nav-mobile-open');
+      mobileOverlay.classList.add('nav-mobile-overlay-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      mobileMenu.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
     }
 
-    function closeDrawer() {
-      if (!drawer) return;
-      drawer.classList.remove('open');
-      document.body.classList.remove('nav-drawer-open');
+    function closeMenu() {
+      toggle.classList.remove('nav-toggle-open');
+      mobileMenu.classList.remove('nav-mobile-open');
+      mobileOverlay.classList.remove('nav-mobile-overlay-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      mobileMenu.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
     }
 
-    if (toggle) {
-      toggle.addEventListener('click', function () {
-        if (drawer && drawer.classList.contains('open')) {
-          closeDrawer();
-        } else {
-          openDrawer();
-        }
+    toggle.addEventListener('click', function () {
+      var isOpen = mobileMenu.classList.contains('nav-mobile-open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    mobileOverlay.addEventListener('click', closeMenu);
+
+    mobileLinks.forEach(function (link) {
+      link.addEventListener('click', function () {
+        closeMenu();
       });
-    }
-
-    if (backdrop) {
-      backdrop.addEventListener('click', closeDrawer);
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeDrawer);
-    }
-
-    var drawerLinks = document.querySelectorAll('.nav-drawer-links a');
-    if (drawerLinks && drawerLinks.length) {
-      drawerLinks.forEach(function (link) {
-        link.addEventListener('click', function () {
-          closeDrawer();
-        });
-      });
-    }
+    });
   })();
 </script>
