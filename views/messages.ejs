@@ -17,12 +17,15 @@
           </div>
 
           <form id="userChatForm" class="messages-form">
+            <label class="messages-attach-btn">
+              <input type="file" id="userChatImage" accept="image/*" hidden />
+              <span>📎</span>
+            </label>
             <textarea
               id="userChatInput"
               name="text"
               rows="2"
               placeholder="Xabaringizni yozing..."
-              required
             ></textarea>
             <button type="submit" class="btn-primary messages-send-btn">Yuborish</button>
           </form>
@@ -36,6 +39,7 @@
     var chatBody = document.getElementById('userChatBody');
     var chatForm = document.getElementById('userChatForm');
     var chatInput = document.getElementById('userChatInput');
+    var chatImageInput = document.getElementById('userChatImage');
     var emptyState = document.getElementById('userChatEmpty');
 
     function renderMessages(list) {
@@ -94,30 +98,70 @@
         });
     }
 
+    function uploadImageIfNeeded() {
+      return new Promise(function (resolve) {
+        if (!chatImageInput || !chatImageInput.files || !chatImageInput.files[0]) {
+          return resolve(null);
+        }
+
+        var file = chatImageInput.files[0];
+        var formData = new FormData();
+        formData.append('image', file);
+
+        fetch('/upload/image', {
+          method: 'POST',
+          body: formData
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            chatImageInput.value = '';
+            if (data && data.url) {
+              resolve(data.url);
+            } else {
+              resolve(null);
+            }
+          })
+          .catch(function () {
+            chatImageInput.value = '';
+            resolve(null);
+          });
+      });
+    }
+
     if (chatForm && chatInput) {
       chatForm.addEventListener('submit', function (e) {
         e.preventDefault();
         var text = (chatInput.value || '').trim();
-        if (!text) return;
+        if (!text && (!chatImageInput || !chatImageInput.files || !chatImageInput.files[0])) return;
 
         chatForm.classList.add('messages-form-sending');
 
-        fetch('/messages/api', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-          },
-          body: 'text=' + encodeURIComponent(text)
-        })
-          .then(function (res) { return res.json(); })
-          .then(function () {
-            chatInput.value = '';
-            chatForm.classList.remove('messages-form-sending');
-            loadThread();
+        uploadImageIfNeeded().then(function (imageUrl) {
+          var bodyParts = [];
+          if (text) {
+            bodyParts.push('text=' + encodeURIComponent(text));
+          }
+          if (imageUrl) {
+            bodyParts.push('imageUrl=' + encodeURIComponent(imageUrl));
+          }
+
+          fetch('/messages/api', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            },
+            body: bodyParts.join('&')
           })
-          .catch(function () {
-            chatForm.classList.remove('messages-form-sending');
-          });
+            .then(function (res) { return res.json(); })
+            .then(function () {
+              chatInput.value = '';
+              chatForm.classList.remove('messages-form-sending');
+              loadThread();
+            })
+            .catch(function () {
+              chatForm.classList.remove('messages-form-sending');
+            });
+        });
       });
     }
 

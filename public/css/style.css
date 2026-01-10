@@ -212,6 +212,19 @@ a { text-decoration: none; color: inherit; }
   background: #ffffff;
 }
 
+.messages-attach-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #d5e6df;
+  font-size: 18px;
+  cursor: pointer;
+  background: #f5fffb;
+}
+
 .messages-form textarea {
   flex: 1;
   resize: none;
