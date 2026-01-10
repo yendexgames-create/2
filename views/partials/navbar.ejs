@@ -1,6 +1,7 @@
 <header class="navbar sticky">
   <div class="nav-container">
     <a href="/" class="logo">Math<span>Club</span></a>
+
     <nav class="nav-links">
       <a href="/">Bosh sahifa</a>
       <a href="/about">Biz haqimizda</a>
@@ -13,6 +14,7 @@
         <a href="/messages">Adminga xabarlashish</a>
       <% } %>
     </nav>
+
     <div class="nav-right">
       <% if (!user) { %>
         <a href="/auth/login" class="btn-outline">Kirish</a>
@@ -36,5 +38,86 @@
         </div>
       <% } %>
     </div>
+
+    <button type="button" class="nav-toggle" id="navToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <div class="nav-drawer" id="navDrawer">
+    <div class="nav-drawer-backdrop" id="navDrawerBackdrop"></div>
+    <div class="nav-drawer-panel">
+      <div class="nav-drawer-header">
+        <span class="logo">Math<span>Club</span></span>
+        <button type="button" class="nav-drawer-close" id="navDrawerClose">×</button>
+      </div>
+      <nav class="nav-drawer-links">
+        <a href="/">Bosh sahifa</a>
+        <a href="/about">Biz haqimizda</a>
+        <a href="/teacher">O‘qituvchi</a>
+        <a href="/results">Natijalar</a>
+        <a href="/register-course">Kursga yozilish</a>
+        <% if (user) { %>
+          <a href="/tests">Testlar</a>
+          <a href="/leaderboard">Yetakchilar</a>
+          <a href="/messages">Adminga xabarlashish</a>
+          <a href="/profile">Shaxsiy kabinet</a>
+          <a href="/auth/logout">Chiqish</a>
+        <% } else { %>
+          <a href="/auth/login">Kirish</a>
+          <a href="/auth/register">Ro‘yxatdan o‘tish</a>
+        <% } %>
+      </nav>
+    </div>
   </div>
 </header>
+
+<script>
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var drawer = document.getElementById('navDrawer');
+    var backdrop = document.getElementById('navDrawerBackdrop');
+    var closeBtn = document.getElementById('navDrawerClose');
+
+    function openDrawer() {
+      if (!drawer) return;
+      drawer.classList.add('open');
+      document.body.classList.add('nav-drawer-open');
+    }
+
+    function closeDrawer() {
+      if (!drawer) return;
+      drawer.classList.remove('open');
+      document.body.classList.remove('nav-drawer-open');
+    }
+
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        if (drawer && drawer.classList.contains('open')) {
+          closeDrawer();
+        } else {
+          openDrawer();
+        }
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeDrawer);
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeDrawer);
+    }
+
+    var drawerLinks = document.querySelectorAll('.nav-drawer-links a');
+    if (drawerLinks && drawerLinks.length) {
+      drawerLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
+          closeDrawer();
+        });
+      });
+    }
+  })();
+</script>
