@@ -47,7 +47,7 @@ a { text-decoration: none; color: inherit; }
 .nav-drawer-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.6);
 }
 
 .nav-drawer-panel {
@@ -77,6 +77,12 @@ a { text-decoration: none; color: inherit; }
   margin-bottom: 12px;
 }
 
+.nav-drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0d3b2e;
+}
+
 .nav-drawer-close {
   border: none;
   background: transparent;
@@ -95,6 +101,10 @@ a { text-decoration: none; color: inherit; }
 .nav-drawer-links a {
   font-size: 15px;
   padding: 8px 4px;
+}
+
+body.nav-drawer-open {
+  overflow: hidden;
 }
 
 .nav-profile { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(13,59,46,0.04); }
@@ -524,6 +534,11 @@ a { text-decoration: none; color: inherit; }
 
   .nav-toggle {
     display: inline-flex;
+  }
+
+  .nav-drawer-panel {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
