@@ -59,6 +59,22 @@ exports.getTestSolvePage = async (req, res) => {
 
     const mode = (req.query && req.query.mode) ? String(req.query.mode) : 'timed';
 
+    if (mode === 'once' && req.user) {
+      const existing = await Result.findOne({
+        userId: req.user._id,
+        testId: test._id
+      }).lean();
+
+      if (existing) {
+        return res.render('tests/solve', {
+          title: test.title + ' — Testni yechish',
+          test: null,
+          error: 'Siz bu testni vaqtsiz rejimda allaqachon yechgansiz. Bu rejimda testni qayta ochish mumkin emas.',
+          mode
+        });
+      }
+    }
+
     return res.render('tests/solve', {
       title: test.title + ' — Testni yechish',
       test: plain,
@@ -127,9 +143,24 @@ exports.getTestData = async (req, res) => {
 
 exports.submitTest = async (req, res) => {
   try {
-    const { answers, openAnswers } = req.body; // answers: yopiq savollar uchun, openAnswers: ochiq savollar uchun
+    const { answers, openAnswers, mode } = req.body; // answers: yopiq savollar uchun, openAnswers: ochiq savollar uchun
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test topilmadi' });
+
+    const modeSafe = typeof mode === 'string' ? mode : 'timed';
+
+    if (modeSafe === 'once' && req.user) {
+      const existing = await Result.findOne({
+        userId: req.user._id,
+        testId: test._id
+      }).lean();
+
+      if (existing) {
+        return res.status(400).json({
+          message: 'Siz bu testni vaqtsiz rejimda allaqachon yechgansiz. Bu rejimda testni qayta yechish mumkin emas.'
+        });
+      }
+    }
 
     const total = Number(test.totalQuestions || 0);
     let closed = Number(test.closedCount || 0);

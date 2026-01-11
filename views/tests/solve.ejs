@@ -101,6 +101,8 @@
 
     let currentAnswers = new Array(closedCount > 0 ? closedCount : 0).fill('');
     let currentIndex = 0;
+    let timerInterval = null;
+    let hasSubmitted = false;
 
     function updateProgress(current, total) {
       if (!progressBar) return;
@@ -273,47 +275,86 @@
       });
     }
 
-    if (submitBtn) {
-      submitBtn.addEventListener('click', async function () {
-        if (!testId || !closedCount) return;
-        try {
-          // Ochiq savollar javoblarini yig'amiz
-          let openAnswers = [];
-          if (openCount > 0 && openQuestionsPanel) {
-            const items = openQuestionsPanel.querySelectorAll('.open-question-item');
-            items.forEach(function (item) {
-              const textarea = item.querySelector('.open-question-input');
-              const val = textarea && textarea.value ? textarea.value.toString().trim() : '';
-              openAnswers.push(val);
-            });
-          }
-
-          const res = await fetch('/tests/api/' + testId + '/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answers: currentAnswers, openAnswers: openAnswers })
+    async function submitTestNow() {
+      if (hasSubmitted) return;
+      hasSubmitted = true;
+      if (!testId || !closedCount) return;
+      try {
+        // Ochiq savollar javoblarini yig'amiz
+        let openAnswers = [];
+        if (openCount > 0 && openQuestionsPanel) {
+          const items = openQuestionsPanel.querySelectorAll('.open-question-item');
+          items.forEach(function (item) {
+            const textarea = item.querySelector('.open-question-input');
+            const val = textarea && textarea.value ? textarea.value.toString().trim() : '';
+            openAnswers.push(val);
           });
-          if (res.status === 401) {
-            alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
-            window.location.href = '/auth/login';
-            return;
-          }
-          const data = await res.json();
-          if (testResult) {
-            const totalQ = typeof data.totalQuestions === 'number' && data.totalQuestions > 0
-              ? data.totalQuestions
-              : closedCount;
-            testResult.textContent = 'Natija: ' + data.score + '% (' + data.correct + '/' + totalQ + ' to‘g‘ri savol)';
-          }
-          if (data && typeof data.score === 'number') {
-            window.setTimeout(function () {
-              window.location.href = '/tests/' + testId + '/result';
-            }, 500);
-          }
-        } catch (e) {
-          console.error(e);
         }
+
+        const res = await fetch('/tests/api/' + testId + '/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers: currentAnswers, openAnswers: openAnswers, mode: mode })
+        });
+        if (res.status === 401) {
+          alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');
+          window.location.href = '/auth/login';
+          return;
+        }
+        const data = await res.json();
+        if (res.status >= 400) {
+          // masalan, vaqtsiz rejimda allaqachon yechilgan bo'lsa
+          if (data && data.message) {
+            alert(data.message);
+          }
+          return;
+        }
+        if (testResult) {
+          const totalQ = typeof data.totalQuestions === 'number' && data.totalQuestions > 0
+            ? data.totalQuestions
+            : closedCount;
+          testResult.textContent = 'Natija: ' + data.score + '% (' + data.correct + '/' + totalQ + ' to‘g‘ri savol)';
+        }
+        if (data && typeof data.score === 'number') {
+          window.setTimeout(function () {
+            window.location.href = '/tests/' + testId + '/result';
+          }, 500);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function () {
+        submitTestNow();
       });
+    }
+
+    if (mode === 'timed' && timerDisplay && timerMinutes > 0) {
+      const totalMs = timerMinutes * 60 * 1000;
+      const endTime = Date.now() + totalMs;
+
+      function renderTime() {
+        const now = Date.now();
+        let remaining = endTime - now;
+        if (remaining < 0) remaining = 0;
+        const totalSeconds = Math.floor(remaining / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const mm = minutes.toString().padStart(2, '0');
+        const ss = seconds.toString().padStart(2, '0');
+        timerDisplay.textContent = mm + ':' + ss;
+
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          // vaqt tugashi bilan avtomatik yuboramiz
+          submitTestNow();
+        }
+      }
+
+      renderTime();
+      timerInterval = setInterval(renderTime, 1000);
     }
   })();
 </script>
