@@ -62,7 +62,8 @@ exports.getTestSolvePage = async (req, res) => {
     if (mode === 'once' && req.user) {
       const existing = await Result.findOne({
         userId: req.user._id,
-        testId: test._id
+        testId: test._id,
+        mode: 'once'
       }).lean();
 
       if (existing) {
@@ -152,7 +153,8 @@ exports.submitTest = async (req, res) => {
     if (modeSafe === 'once' && req.user) {
       const existing = await Result.findOne({
         userId: req.user._id,
-        testId: test._id
+        testId: test._id,
+        mode: 'once'
       }).lean();
 
       if (existing) {
@@ -199,6 +201,26 @@ exports.submitTest = async (req, res) => {
     const safeAnswers = Array.isArray(answers) ? answers : [];
     const safeOpenAnswers = Array.isArray(openAnswers) ? openAnswers : [];
 
+    const hasClosedAnswer = safeAnswers.some((a) => {
+      if (a === null || typeof a === 'undefined') return false;
+      const v = a.toString().trim();
+      return v.length > 0;
+    });
+
+    const hasOpenAnswer = safeOpenAnswers.some((a) => {
+      if (a === null || typeof a === 'undefined') return false;
+      const v = a.toString().trim();
+      return v.length > 0;
+    });
+
+    const hasAnyAnswer = hasClosedAnswer || hasOpenAnswer;
+
+    if (modeSafe === 'once' && !hasAnyAnswer) {
+      return res.status(400).json({
+        message: 'Vaqtsiz rejimda hech bo‘lmaganda bitta javobni belgilashingiz yoki kiritishingiz kerak.'
+      });
+    }
+
     for (let i = 0; i < total; i++) {
       const rightRaw = (parsed[i].answer || '').toString().trim();
 
@@ -243,7 +265,8 @@ exports.submitTest = async (req, res) => {
     await Result.create({
       userId: req.user._id,
       testId: test._id,
-      score
+      score,
+      mode: modeSafe
     });
 
     req.user.tests_taken.push({ testId: test._id, score });
