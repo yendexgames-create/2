@@ -3,7 +3,7 @@ const Result = require('../models/Result');
 
 exports.getTestPage = async (req, res) => {
   try {
-    const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount');
+    const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount timerMinutes');
 
     let userScoresByTest = {};
     if (req.user) {
@@ -35,7 +35,7 @@ exports.getTestPage = async (req, res) => {
 exports.getTestSolvePage = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id).select(
-      'title pdfLink totalQuestions closedCount openCount videoLink'
+      'title pdfLink totalQuestions closedCount openCount videoLink timerMinutes'
     );
     if (!test) {
       return res.status(404).render('tests/solve', {
@@ -57,16 +57,7 @@ exports.getTestSolvePage = async (req, res) => {
 
     plain.displayClosedCount = closedForClient;
 
-    res.render('tests/solve', {
-      title: test.title + ' — Testni yechish',
-      test: plain,
-      error: null
-    });
-  } catch (err) {
-    console.error('Testni yuklash xatosi:', err.message);
-    res.status(500).send('Server xatosi');
-  }
-};
+    const mode = (req.query && req.query.mode) ? String(req.query.mode) : 'timed';
 
 // Test natijasi sahifasi (so‘nggi natija bo‘yicha)
 exports.getTestResultPage = async (req, res) => {

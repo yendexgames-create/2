@@ -88,13 +88,16 @@ exports.showDashboard = async (req, res) => {
 
 exports.createTest = async (req, res) => {
   try {
-    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink } = req.body;
+    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes } = req.body;
 
     const total = Number(totalQuestions || 0);
     const open = Number(openCount || 0);
+    const timer = timerMinutes !== undefined && timerMinutes !== null && timerMinutes !== ''
+      ? Number(timerMinutes)
+      : null;
     const closed = total - open;
 
-    if (!title || !pdfLink || !total || total < 1 || open < 0) {
+    if (!title || !pdfLink || !total || total < 1 || open < 0 || (timer !== null && (Number.isNaN(timer) || timer < 0))) {
       const msg = encodeURIComponent('Test nomi, PDF linki va savollar soni to\'g\'ri kiritilganiga ishonch hosil qiling.');
       return res.redirect('/admin?testError=' + msg + '#admin-tests');
     }
@@ -159,7 +162,8 @@ exports.createTest = async (req, res) => {
       closedCount: closed,
       openCount: open,
       answersText,
-      videoLink
+      videoLink,
+      timerMinutes: timer
     });
 
     res.redirect('/admin#admin-tests');
@@ -207,13 +211,16 @@ exports.editTestForm = async (req, res) => {
 exports.updateTest = async (req, res) => {
   try {
     const testId = req.params.id;
-    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink } = req.body;
+    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes } = req.body;
 
     const total = Number(totalQuestions || 0);
     const open = Number(openCount || 0);
     const closed = total - open;
+    const timer = timerMinutes !== undefined && timerMinutes !== null && timerMinutes !== ''
+      ? Number(timerMinutes)
+      : null;
 
-    if (!title || !pdfLink || !total || total < 1 || open < 0) {
+    if (!title || !pdfLink || !total || total < 1 || open < 0 || (timer !== null && (Number.isNaN(timer) || timer < 0))) {
       const msg = encodeURIComponent("Test nomi, PDF linki va savollar soni to'g'ri kiritilganiga ishonch hosil qiling.");
       return res.redirect('/admin/tests/' + testId + '/edit?testError=' + msg);
     }
@@ -273,7 +280,8 @@ exports.updateTest = async (req, res) => {
       closedCount: closed,
       openCount: open,
       answersText,
-      videoLink
+      videoLink,
+      timerMinutes: timer
     });
 
     res.redirect('/admin#admin-tests');

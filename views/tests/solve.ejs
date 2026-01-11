@@ -8,6 +8,18 @@
         <p class="tests-empty"><%= error || 'Bu test topilmadi yoki o‘chirilgan.' %></p>
       <% } else { %>
         <h1 class="section-title"><%= test.title %></h1>
+        <div class="test-mode-banner" data-mode="<%= typeof mode !== 'undefined' ? mode : 'timed' %>">
+          <% if (typeof mode !== 'undefined' && mode === 'once') { %>
+            <div class="alert alert-warning" style="font-size:13px;margin-bottom:12px;">
+              Siz bu testni <strong>vaqtsiz</strong> rejimda tanladingiz. Bu rejimda testni faqat <strong>bitta urinish</strong>da yecha olasiz va yakunlaganingizdan so'ng shu testni qayta ocholmaysiz.
+            </div>
+          <% } else if (typeof test.timerMinutes !== 'undefined' && test.timerMinutes !== null && test.timerMinutes > 0) { %>
+            <div class="test-timer-container" style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+              <div style="font-size:13px;color:#234;">Vaqt bilan rejim: </div>
+              <div id="testTimerDisplay" class="test-timer-display" data-timer-minutes="<%= test.timerMinutes %>"></div>
+            </div>
+          <% } %>
+        </div>
         <div class="tests-layout">
           <div class="card test-container">
             <div class="test-header">
@@ -77,6 +89,16 @@
     const submitBtn = document.getElementById('submitTestBtn');
     const testResult = document.getElementById('testResult');
     const openQuestionsPanel = document.getElementById('openQuestionsPanel');
+    const timerDisplay = document.getElementById('testTimerDisplay');
+
+    const mode = '<%= typeof mode !== "undefined" ? mode : "timed" %>';
+    const timerMinutes = (function(){
+      <% if (typeof test.timerMinutes !== 'undefined' && test.timerMinutes !== null) { %>
+        return Number('<%= test.timerMinutes %>') || 0;
+      <% } else { %>
+        return 0;
+      <% } %>
+    })();
 
     const testId = '<%= test._id %>';
     const closedCount = Number('<%= (typeof test.displayClosedCount !== "undefined" && test.displayClosedCount !== null) ? test.displayClosedCount : 0 %>') || 0;

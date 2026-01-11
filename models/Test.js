@@ -15,6 +15,7 @@ const testSchema = new mongoose.Schema(
     openCount: { type: Number },
     answersText: { type: String },
     videoLink: { type: String },
+    timerMinutes: { type: Number },
     questions: [questionSchema]
   },
   { timestamps: true }

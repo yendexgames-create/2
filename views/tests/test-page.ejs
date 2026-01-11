@@ -12,7 +12,13 @@
             <% if (tests && tests.length) { %>
               <% tests.forEach(function(t, idx){ %>
                 <% var score = (typeof userScoresByTest !== 'undefined' && userScoresByTest && userScoresByTest[String(t._id)]) || null; %>
-                <a href="/tests/<%= t._id %>" class="test-card-btn">
+                <a
+                  href="/tests/<%= t._id %>"
+                  class="test-card-btn js-test-start"
+                  data-test-id="<%= t._id %>"
+                  data-test-title="<%- t.title %>"
+                  data-test-timer="<%= typeof t.timerMinutes !== 'undefined' && t.timerMinutes !== null ? t.timerMinutes : '' %>"
+                >
                   <div class="test-card-rank">#<%= idx + 1 %></div>
                   <div class="test-card-main">
                     <div class="test-card-title"><%= t.title %></div>
@@ -44,4 +50,125 @@
     </div>
   </section>
 </main>
+
+<div id="test-start-modal" class="admin-modal admin-section-hidden">
+  <div class="admin-modal-backdrop" id="test-start-backdrop"></div>
+  <div class="admin-modal-content" style="max-width:420px;">
+    <div class="admin-modal-header">
+      <h3 id="test-start-title">Testni boshlash</h3>
+      <button type="button" id="test-start-close" class="admin-modal-close">
+7</button>
+    </div>
+    <div class="admin-modal-body">
+      <p id="test-start-info" style="font-size:14px;color:#234;margin-bottom:12px;"></p>
+      <div id="test-start-timer-info" style="font-size:13px;color:#56756a;margin-bottom:12px;display:none;"></div>
+      <div class="admin-tests-header" style="margin-top:0;display:flex;flex-direction:column;gap:8px;">
+        <button type="button" id="btn-start-timed" class="btn-primary" style="width:100%;display:none;">Vaqt bilan yechish</button>
+        <button type="button" id="btn-start-once" class="btn-outline" style="width:100%;">
+          Vaqtsiz yechish (faqat bitta urinish)
+        </button>
+        <small style="font-size:12px;color:#b35a00;">
+          Agar siz testni vaqtsiz yechishni tanlasangiz, uni bir urinishning o'zidayoq yechishingiz kerak.
+          Bu rejimda testni tugatgandan so'ng, shu testni qayta ocholmaysiz.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var cards = document.querySelectorAll('.js-test-start');
+    var modal = document.getElementById('test-start-modal');
+    var backdrop = document.getElementById('test-start-backdrop');
+    var btnClose = document.getElementById('test-start-close');
+    var titleEl = document.getElementById('test-start-title');
+    var infoEl = document.getElementById('test-start-info');
+    var timerInfoEl = document.getElementById('test-start-timer-info');
+    var btnTimed = document.getElementById('btn-start-timed');
+    var btnOnce = document.getElementById('btn-start-once');
+
+    var currentTestId = null;
+    var currentHasTimer = false;
+    var currentTimerMinutes = null;
+
+    function openModal(testId, title, timerMinutes) {
+      currentTestId = testId;
+      currentHasTimer = !!(timerMinutes && !Number.isNaN(Number(timerMinutes)) && Number(timerMinutes) > 0);
+      currentTimerMinutes = currentHasTimer ? Number(timerMinutes) : null;
+
+      if (titleEl) {
+        titleEl.textContent = title + ' — boshlash';
+      }
+      if (infoEl) {
+        infoEl.textContent = 'Testni qanday usulda yechmoqchisiz?';
+      }
+
+      if (timerInfoEl) {
+        if (currentHasTimer) {
+          timerInfoEl.style.display = 'block';
+          timerInfoEl.textContent = 'Vaqt bilan yechish rejimida sizga ' + currentTimerMinutes + ' daqiqa beriladi. Xohlasangiz testga qayta qayta kirib yechishingiz mumkin.';
+        } else {
+          timerInfoEl.style.display = 'none';
+          timerInfoEl.textContent = '';
+        }
+      }
+
+      if (btnTimed) {
+        btnTimed.style.display = currentHasTimer ? 'block' : 'none';
+      }
+
+      if (modal) {
+        modal.classList.remove('admin-section-hidden');
+      }
+    }
+
+    function closeModal() {
+      currentTestId = null;
+      currentHasTimer = false;
+      currentTimerMinutes = null;
+      if (modal) {
+        modal.classList.add('admin-section-hidden');
+      }
+    }
+
+    if (cards && cards.length) {
+      cards.forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          e.preventDefault();
+          var id = this.getAttribute('data-test-id');
+          var title = this.getAttribute('data-test-title') || 'Test';
+          var timer = this.getAttribute('data-test-timer');
+          openModal(id, title, timer);
+        });
+      });
+    }
+
+    if (btnClose) {
+      btnClose.addEventListener('click', function () {
+        closeModal();
+      });
+    }
+    if (backdrop) {
+      backdrop.addEventListener('click', function () {
+        closeModal();
+      });
+    }
+
+    if (btnTimed) {
+      btnTimed.addEventListener('click', function () {
+        if (!currentTestId) return;
+        window.location.href = '/tests/' + encodeURIComponent(currentTestId) + '?mode=timed';
+      });
+    }
+
+    if (btnOnce) {
+      btnOnce.addEventListener('click', function () {
+        if (!currentTestId) return;
+        window.location.href = '/tests/' + encodeURIComponent(currentTestId) + '?mode=once';
+      });
+    }
+  })();
+</script>
+
 <%- include('../partials/footer') %>
