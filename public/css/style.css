@@ -437,6 +437,93 @@ a { text-decoration: none; color: inherit; }
 
 .test-result { margin-top: 16px; font-weight: 600; }
 
+/* Test timer (solve page) */
+.test-mode-banner {
+  margin-bottom: 16px;
+}
+
+.test-once-alert {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.test-timer-container {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.test-timer-label {
+  font-size: 13px;
+  color: #234;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.test-timer-display {
+  min-width: 140px;
+  padding: 10px 22px;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-size: 20px;
+  color: #fdfdfd;
+  background: radial-gradient(circle at 10% 20%, #35a2ff 0%, #5b3df5 35%, #ff4f81 100%);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.15),
+    0 0 18px rgba(91, 61, 245, 0.6),
+    0 0 35px rgba(255, 79, 129, 0.5);
+  position: relative;
+  overflow: hidden;
+  animation: test-timer-pulse 1.5s ease-in-out infinite;
+}
+
+.test-timer-display::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.3), transparent 55%);
+  opacity: 0.7;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+@keyframes test-timer-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.15),
+      0 0 18px rgba(91, 61, 245, 0.6),
+      0 0 35px rgba(255, 79, 129, 0.5);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.22),
+      0 0 26px rgba(91, 61, 245, 0.9),
+      0 0 45px rgba(255, 79, 129, 0.75);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.15),
+      0 0 18px rgba(91, 61, 245, 0.6),
+      0 0 35px rgba(255, 79, 129, 0.5);
+  }
+}
+
+@media (max-width: 600px) {
+  .test-timer-display {
+    min-width: 120px;
+    padding: 8px 18px;
+    font-size: 18px;
+  }
+}
+
 /* Tests page layout */
 .tests-layout { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.4fr); gap: 24px; align-items: flex-start; }
 

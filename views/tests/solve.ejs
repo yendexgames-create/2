@@ -10,13 +10,13 @@
         <h1 class="section-title"><%= test.title %></h1>
         <div class="test-mode-banner" data-mode="<%= typeof mode !== 'undefined' ? mode : 'timed' %>">
           <% if (typeof mode !== 'undefined' && mode === 'once') { %>
-            <div class="alert alert-warning" style="font-size:13px;margin-bottom:12px;">
+            <div class="alert alert-warning test-once-alert">
               Siz bu testni <strong>vaqtsiz</strong> rejimda tanladingiz. Bu rejimda testni faqat <strong>bitta urinish</strong>da yecha olasiz va yakunlaganingizdan so'ng shu testni qayta ocholmaysiz.
             </div>
           <% } else if (typeof test.timerMinutes !== 'undefined' && test.timerMinutes !== null && test.timerMinutes > 0) { %>
-            <div class="test-timer-container" style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-              <div style="font-size:13px;color:#234;">Vaqt bilan rejim: </div>
-              <div id="testTimerDisplay" class="test-timer-display" data-timer-minutes="<%= test.timerMinutes %>"></div>
+            <div class="test-timer-container">
+              <div class="test-timer-label">Vaqt bilan rejim</div>
+              <div class="test-timer-display" id="testTimerDisplay" data-timer-minutes="<%= test.timerMinutes %>"></div>
             </div>
           <% } %>
         </div>
