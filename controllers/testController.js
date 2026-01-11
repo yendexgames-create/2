@@ -59,6 +59,22 @@ exports.getTestSolvePage = async (req, res) => {
 
     const mode = (req.query && req.query.mode) ? String(req.query.mode) : 'timed';
 
+    return res.render('tests/solve', {
+      title: test.title + ' — Testni yechish',
+      test: plain,
+      error: null,
+      mode
+    });
+  } catch (err) {
+    console.error('Test yechish sahifa xatosi:', err.message);
+    return res.status(500).render('tests/solve', {
+      title: 'Server xatosi',
+      test: null,
+      error: 'Server xatosi yuz berdi.'
+    });
+  }
+};
+
 // Test natijasi sahifasi (so‘nggi natija bo‘yicha)
 exports.getTestResultPage = async (req, res) => {
   try {

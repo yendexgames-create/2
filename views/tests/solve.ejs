@@ -92,13 +92,7 @@
     const timerDisplay = document.getElementById('testTimerDisplay');
 
     const mode = '<%= typeof mode !== "undefined" ? mode : "timed" %>';
-    const timerMinutes = (function(){
-      <% if (typeof test.timerMinutes !== 'undefined' && test.timerMinutes !== null) { %>
-        return Number('<%= test.timerMinutes %>') || 0;
-      <% } else { %>
-        return 0;
-      <% } %>
-    })();
+    const timerMinutes = Number('<%= (test && typeof test.timerMinutes !== "undefined" && test.timerMinutes !== null ? test.timerMinutes : 0) %>') || 0;
 
     const testId = '<%= test._id %>';
     const closedCount = Number('<%= (typeof test.displayClosedCount !== "undefined" && test.displayClosedCount !== null) ? test.displayClosedCount : 0 %>') || 0;
