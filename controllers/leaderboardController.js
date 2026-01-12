@@ -1,10 +1,12 @@
 const Result = require('../models/Result');
 const User = require('../models/User');
+const Test = require('../models/Test');
 
 exports.getLeaderboard = async (req, res) => {
   try {
-    // Har foydalanuvchi bo'yicha o'rtacha ball va noyob testlar soni
+    // Faqat vaqtli (timed) urinishlar bo'yicha: har foydalanuvchi uchun o'rtacha ball va noyob testlar soni
     const stats = await Result.aggregate([
+      { $match: { mode: 'timed' } },
       {
         $group: {
           _id: '$userId',
@@ -149,6 +151,111 @@ exports.getLeaderboardUserProfile = async (req, res) => {
     });
   } catch (err) {
     console.error('Leaderboard user profili xatosi:', err.message);
+    res.status(500).send('Server xatosi');
+  }
+};
+
+// Har bir test uchun alohida yetakchilar (faqat vaqtli rejimdagi urinishlar hisoblanadi)
+exports.getPerTestLeaderboard = async (req, res) => {
+  try {
+    const tests = await Test.find({}).select('title totalQuestions').lean();
+
+    if (!tests.length) {
+      return res.render('leaderboard-tests', {
+        title: 'Testlar bo‘yicha yetakchilar',
+        solvedTests: [],
+        otherTests: [],
+        selectedTest: null,
+        leaderboard: [],
+        selectedTestId: null
+      });
+    }
+
+    let solvedSet = new Set();
+    if (req.user) {
+      const timedResults = await Result.find({ userId: req.user._id, mode: 'timed' })
+        .select('testId')
+        .lean();
+      solvedSet = new Set(timedResults.map((r) => String(r.testId)));
+    }
+
+    const solvedTests = [];
+    const otherTests = [];
+    tests.forEach((t) => {
+      if (solvedSet.has(String(t._id))) {
+        solvedTests.push(t);
+      } else {
+        otherTests.push(t);
+      }
+    });
+
+    const paramId = req.query && req.query.test ? String(req.query.test) : null;
+    let selectedTestId = null;
+
+    if (paramId) {
+      selectedTestId = paramId;
+    } else if (solvedTests.length) {
+      selectedTestId = String(solvedTests[0]._id);
+    } else if (tests.length) {
+      selectedTestId = String(tests[0]._id);
+    }
+
+    let selectedTest = null;
+    let leaderboard = [];
+
+    if (selectedTestId) {
+      selectedTest = tests.find((t) => String(t._id) === String(selectedTestId)) || null;
+
+      if (selectedTest) {
+        const stats = await Result.aggregate([
+          { $match: { testId: selectedTest._id, mode: 'timed' } },
+          {
+            $group: {
+              _id: '$userId',
+              bestScore: { $max: '$score' },
+              attempts: { $sum: 1 }
+            }
+          },
+          { $sort: { bestScore: -1, attempts: -1 } }
+        ]);
+
+        const userIds = stats.map((s) => s._id);
+        const users = await User.find({ _id: { $in: userIds } })
+          .select('name avatar')
+          .lean();
+
+        const userMap = new Map();
+        users.forEach((u) => {
+          userMap.set(String(u._id), u);
+        });
+
+        leaderboard = stats
+          .map((s, idx) => {
+            const u = userMap.get(String(s._id));
+            if (!u) return null;
+            return {
+              userId: s._id,
+              name: u.name || 'Foydalanuvchi',
+              avatar: u.avatar || null,
+              bestScore: s.bestScore,
+              attempts: s.attempts,
+              rank: idx + 1
+            };
+          })
+          .filter(Boolean);
+      }
+    }
+
+    res.render('leaderboard-tests', {
+      title: 'Testlar bo‘yicha yetakchilar',
+      solvedTests,
+      otherTests,
+      selectedTest,
+      leaderboard,
+      selectedTestId
+    });
+  } catch (err) {
+    console.error('Per-test leaderboard xatosi:', err.message);
     res.status(500).send('Server xatosi');
   }
 };

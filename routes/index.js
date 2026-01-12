@@ -26,6 +26,7 @@ router.get('/register-course', ensureAuthOptional, (req, res) => {
 });
 
 router.get('/leaderboard', ensureAuthOptional, leaderboardController.getLeaderboard);
+router.get('/leaderboard/tests', ensureAuthOptional, leaderboardController.getPerTestLeaderboard);
 router.get('/leaderboard/user/:id', ensureAuthOptional, leaderboardController.getLeaderboardUserProfile);
 
 router.get('/profile', ensureAuth, (req, res) => {

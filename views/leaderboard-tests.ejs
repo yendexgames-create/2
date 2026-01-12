@@ -1,0 +1,117 @@
+<%- include('./partials/head') %>
+<%- include('./partials/navbar') %>
+
+<main class="page tests-result-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Testlar bo'yicha yetakchilar</h1>
+
+      <div class="tests-layout">
+        <div class="tests-list card">
+          <h2 class="tests-list-title">Testlar ro'yxati</h2>
+          <p class="tests-list-desc">Avval o'zingiz vaqtli rejimda yechgan testlar, so'ng qolgan testlar.</p>
+
+          <% if ((!solvedTests || !solvedTests.length) && (!otherTests || !otherTests.length)) { %>
+            <p class="tests-empty">Hozircha testlar mavjud emas.</p>
+          <% } else { %>
+            <% if (solvedTests && solvedTests.length) { %>
+              <h3 class="tests-list-subtitle">Siz yechgan testlar (vaqt bilan)</h3>
+              <div class="tests-cards">
+                <% solvedTests.forEach(function(t){ %>
+                  <a href="/leaderboard/tests?test=<%= t._id %>" class="test-card-btn <%= selectedTestId && String(selectedTestId) === String(t._id) ? 'test-card-selected' : '' %>">
+                    <div class="test-card-main">
+                      <div class="test-card-title"><%= t.title %></div>
+                      <div class="test-card-meta">
+                        <% if (typeof t.totalQuestions !== 'undefined' && t.totalQuestions !== null) { %>
+                          <span><%= t.totalQuestions %> ta savol</span>
+                        <% } %>
+                      </div>
+                    </div>
+                  </a>
+                <% }); %>
+              </div>
+            <% } %>
+
+            <% if (otherTests && otherTests.length) { %>
+              <h3 class="tests-list-subtitle" style="margin-top:18px;">Yana boshqa testlar</h3>
+              <div class="tests-cards">
+                <% otherTests.forEach(function(t){ %>
+                  <a href="/leaderboard/tests?test=<%= t._id %>" class="test-card-btn <%= selectedTestId && String(selectedTestId) === String(t._id) ? 'test-card-selected' : '' %>">
+                    <div class="test-card-main">
+                      <div class="test-card-title"><%= t.title %></div>
+                      <div class="test-card-meta">
+                        <% if (typeof t.totalQuestions !== 'undefined' && t.totalQuestions !== null) { %>
+                          <span><%= t.totalQuestions %> ta savol</span>
+                        <% } %>
+                      </div>
+                    </div>
+                  </a>
+                <% }); %>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+
+        <div class="card test-container">
+          <% if (!selectedTest) { %>
+            <p class="tests-empty">Chap tomondan test tanlang, shu test bo'yicha yetakchilarni ko'rasiz.</p>
+          <% } else { %>
+            <div class="test-header">
+              <div>
+                <div class="test-title"><%= selectedTest.title %></div>
+                <div class="test-meta">
+                  <% if (typeof selectedTest.totalQuestions !== 'undefined' && selectedTest.totalQuestions !== null) { %>
+                    <span><%= selectedTest.totalQuestions %> ta savol</span>
+                  <% } %>
+                  <span style="margin-left:8px;font-size:13px;color:#56756a;">Faqat vaqtli rejimdagi urinishlar hisobga olingan.</span>
+                </div>
+              </div>
+            </div>
+
+            <% if (!leaderboard || !leaderboard.length) { %>
+              <p class="tests-empty">Bu test bo'yicha hali vaqtli rejimda natijalar yo'q.</p>
+            <% } else { %>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Foydalanuvchi</th>
+                      <th>Eng yaxshi aniqlik</th>
+                      <th>Urinishlar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% leaderboard.forEach(function(row){ %>
+                      <tr>
+                        <td><strong><%= row.rank %></strong></td>
+                        <td>
+                          <a href="/leaderboard/user/<%= row.userId %>" class="lb-user-link">
+                            <div class="lb-avatar-wrap">
+                              <div class="lb-avatar-circle">
+                                <% if (row.avatar) { %>
+                                  <img src="<%= row.avatar %>" alt="avatar" />
+                                <% } else { %>
+                                  <span><%= row.name ? row.name.charAt(0).toUpperCase() : 'M' %></span>
+                                <% } %>
+                              </div>
+                            </div>
+                            <span class="lb-name" style="margin-left:8px;"><%= row.name %></span>
+                          </a>
+                        </td>
+                        <td><strong><%= row.bestScore %>%</strong></td>
+                        <td><%= row.attempts %> ta</td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('./partials/footer') %>
