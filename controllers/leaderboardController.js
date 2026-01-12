@@ -90,7 +90,10 @@ exports.getLeaderboardUserProfile = async (req, res) => {
 // Har bir test uchun alohida yetakchilar (faqat vaqtli rejimdagi urinishlar hisoblanadi)
 exports.getPerTestLeaderboard = async (req, res) => {
   try {
-    const tests = await Test.find({}).select('title totalQuestions').lean();
+    // Yetakchilar uchun faqat vaqtli (timerMinutes > 0) testlar ko'rsatiladi
+    const tests = await Test.find({ timerMinutes: { $gt: 0 } })
+      .select('title totalQuestions timerMinutes')
+      .lean();
 
     if (!tests.length) {
       return res.render('leaderboard-tests', {
@@ -122,15 +125,8 @@ exports.getPerTestLeaderboard = async (req, res) => {
     });
 
     const paramId = req.query && req.query.test ? String(req.query.test) : null;
-    let selectedTestId = null;
-
-    if (paramId) {
-      selectedTestId = paramId;
-    } else if (solvedTests.length) {
-      selectedTestId = String(solvedTests[0]._id);
-    } else if (tests.length) {
-      selectedTestId = String(tests[0]._id);
-    }
+    // Defaultda hech qanday test tanlanmaydi, faqat URL'da ?test= bo'lsa tanlanadi
+    let selectedTestId = paramId || null;
 
     let selectedTest = null;
     let leaderboard = [];
