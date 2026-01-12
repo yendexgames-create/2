@@ -2,6 +2,8 @@ const { isValidAdminCode, getCurrentAdminCode } = require('../utils/adminCode');
 const User = require('../models/User');
 const Test = require('../models/Test');
 const Message = require('../models/Message');
+const StarSeason = require('../models/StarSeason');
+const StarReward = require('../models/StarReward');
 
 
 // Admin sessiyasini tekshiruvchi middleware
@@ -49,6 +51,8 @@ exports.showDashboard = async (req, res) => {
   try {
     const users = await User.find({}).lean();
     const tests = await Test.find({}).select('title createdAt').sort({ createdAt: -1 }).lean();
+    const starSeason = await StarSeason.findOne({}).sort({ createdAt: -1 }).lean();
+    const starRewards = await StarReward.find({}).sort({ createdAt: -1 }).lean();
 
     const usersWithStats = users.map((u) => {
       const tests = Array.isArray(u.tests_taken) ? u.tests_taken : [];
@@ -78,11 +82,70 @@ exports.showDashboard = async (req, res) => {
       users: usersWithStats,
       usersWithMessages,
       tests,
-      testError: req.query.testError || null
+      testError: req.query.testError || null,
+      starSeason,
+      starRewards
     });
   } catch (err) {
     console.error('Admin dashboard xatosi:', err.message);
     res.status(500).send('Server xatosi');
+  }
+};
+
+// Stars: mavsum sozlamalarini saqlash
+exports.saveStarSeason = async (req, res) => {
+  try {
+    const { name, startDate, endDate, maxStarsPerUser } = req.body;
+    const isActive = !!req.body.isActive;
+
+    if (!name || !startDate || !endDate) {
+      return res.redirect('/admin#admin-stars');
+    }
+
+    const payload = {
+      name: name.toString().trim(),
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      isActive
+    };
+
+    if (maxStarsPerUser !== undefined && maxStarsPerUser !== null && maxStarsPerUser !== '') {
+      const n = Number(maxStarsPerUser);
+      if (!Number.isNaN(n) && n >= 0) {
+        payload.maxStarsPerUser = n;
+      }
+    }
+
+    // Hozircha bitta joriy season saqlaymiz: eski seasonlar bo'lsa ham, eng oxirgisi ishlatiladi
+    await StarSeason.create(payload);
+
+    return res.redirect('/admin#admin-stars');
+  } catch (err) {
+    console.error('StarSeason saqlash xatosi:', err.message);
+    return res.redirect('/admin#admin-stars');
+  }
+};
+
+// Stars: yangi reward qo'shish
+exports.createStarReward = async (req, res) => {
+  try {
+    const { title, description, costStars } = req.body;
+    const cost = Number(costStars || 0);
+
+    if (!title || !cost || cost < 1) {
+      return res.redirect('/admin#admin-stars');
+    }
+
+    await StarReward.create({
+      title: title.toString().trim(),
+      description: description ? description.toString().trim() : '',
+      costStars: cost
+    });
+
+    return res.redirect('/admin#admin-stars');
+  } catch (err) {
+    console.error('StarReward yaratish xatosi:', err.message);
+    return res.redirect('/admin#admin-stars');
   }
 };
 

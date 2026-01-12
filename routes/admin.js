@@ -13,7 +13,9 @@ const {
   editTestForm,
   updateTest,
   getUserMessages,
-  sendMessageToUser
+  sendMessageToUser,
+  saveStarSeason,
+  createStarReward
 } = require('../controllers/admin');
 
 // Login sahifasi
@@ -29,6 +31,10 @@ router.get('/', ensureAdmin, showDashboard);
 // Foydalanuvchilarni boshqarish
 router.post('/users/:id/clear-history', ensureAdmin, clearUserHistory);
 router.post('/users/:id/delete', ensureAdmin, deleteUser);
+
+// Stars (admin)
+router.post('/stars/season', ensureAdmin, saveStarSeason);
+router.post('/stars/rewards', ensureAdmin, createStarReward);
 
 // Testlarni boshqarish
 router.post('/tests', ensureAdmin, createTest);

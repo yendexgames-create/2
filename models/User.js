@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String },
     googleId: { type: String },
     avatar: { type: String },
+    starsBalance: { type: Number, default: 0 },
     tests_taken: [
       {
         testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test' },
