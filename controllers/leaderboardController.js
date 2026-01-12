@@ -3,77 +3,9 @@ const User = require('../models/User');
 const Test = require('../models/Test');
 
 exports.getLeaderboard = async (req, res) => {
-  try {
-    // Faqat vaqtli (timed) urinishlar bo'yicha: har foydalanuvchi uchun o'rtacha ball va noyob testlar soni
-    const stats = await Result.aggregate([
-      { $match: { mode: 'timed' } },
-      {
-        $group: {
-          _id: '$userId',
-          avgScore: { $avg: '$score' },
-          testsSet: { $addToSet: '$testId' }
-        }
-      },
-      {
-        $project: {
-          avgScore: 1,
-          testsCount: { $size: '$testsSet' }
-        }
-      },
-      {
-        $sort: { avgScore: -1, testsCount: -1 }
-      }
-    ]);
-
-    if (!stats.length) {
-      return res.render('leaderboard', {
-        title: 'Yetakchilar',
-        leaderboard: [],
-        currentUserEntry: null
-      });
-    }
-
-    const userIds = stats.map((s) => s._id);
-    const users = await User.find({ _id: { $in: userIds } })
-      .select('name avatar')
-      .lean();
-
-    const userMap = new Map();
-    users.forEach((u) => {
-      userMap.set(String(u._id), u);
-    });
-
-    let leaderboard = stats.map((s) => {
-      const u = userMap.get(String(s._id));
-      if (!u) return null;
-      return {
-        userId: s._id,
-        name: u.name || 'Foydalanuvchi',
-        avatar: u.avatar || null,
-        testsCount: s.testsCount,
-        avgScore: Math.round(s.avgScore)
-      };
-    }).filter(Boolean);
-
-    leaderboard = leaderboard.map((entry, idx) => ({
-      ...entry,
-      rank: idx + 1
-    }));
-
-    let currentUserEntry = null;
-    if (req.user) {
-      currentUserEntry = leaderboard.find((e) => String(e.userId) === String(req.user._id)) || null;
-    }
-
-    res.render('leaderboard', {
-      title: 'Yetakchilar',
-      leaderboard,
-      currentUserEntry
-    });
-  } catch (err) {
-    console.error('Leaderboard xatosi:', err.message);
-    res.status(500).send('Server xatosi');
-  }
+  // Asosiy "Yetakchilar" sahifasida endi testlar bo'yicha yetakchilar tajribasini ko'rsatamiz
+  // Shuning uchun uni /leaderboard/tests sahifasiga yo'naltiramiz.
+  return res.redirect('/leaderboard/tests');
 };
 
 // Bitta foydalanuvchi profili (yetakchilar sahifasidan ochiladi)
