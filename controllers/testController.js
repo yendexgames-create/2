@@ -1,5 +1,7 @@
 const Test = require('../models/Test');
 const Result = require('../models/Result');
+const StarSeason = require('../models/StarSeason');
+const StarTransaction = require('../models/StarTransaction');
 
 exports.getTestPage = async (req, res) => {
   try {
@@ -262,12 +264,80 @@ exports.submitTest = async (req, res) => {
     const score = Math.round((correct / (total || 1)) * 100);
     const passed = score >= 50;
 
-    await Result.create({
+    const createdResult = await Result.create({
       userId: req.user._id,
       testId: test._id,
       score,
       mode: modeSafe
     });
+
+    const now = new Date();
+
+    if (modeSafe === 'timed' && req.user) {
+      const season = await StarSeason.findOne({
+        isActive: true,
+        startDate: { $lte: now },
+        endDate: { $gte: now }
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      if (season) {
+        const stats = await Result.aggregate([
+          {
+            $match: {
+              testId: test._id,
+              mode: 'timed',
+              createdAt: { $gte: season.startDate, $lte: season.endDate }
+            }
+          },
+          {
+            $group: {
+              _id: '$userId',
+              bestScore: { $max: '$score' }
+            }
+          },
+          { $sort: { bestScore: -1 } }
+        ]);
+
+        const rankEntryIndex = stats.findIndex((s) => String(s._id) === String(req.user._id));
+
+        if (rankEntryIndex !== -1) {
+          const rank = rankEntryIndex + 1;
+          let starsToAdd = 0;
+          if (rank === 1) starsToAdd = 3;
+          else if (rank === 2) starsToAdd = 2;
+          else if (rank === 3) starsToAdd = 1;
+
+          if (starsToAdd > 0) {
+            const already = await StarTransaction.findOne({
+              userId: req.user._id,
+              reason: 'leaderboard_rank',
+              'meta.testId': test._id,
+              'meta.seasonId': season._id,
+              'meta.rank': rank
+            }).lean();
+
+            if (!already) {
+              await StarTransaction.create({
+                userId: req.user._id,
+                amount: starsToAdd,
+                reason: 'leaderboard_rank',
+                meta: {
+                  testId: test._id,
+                  seasonId: season._id,
+                  rank,
+                  resultId: createdResult._id
+                }
+              });
+
+              const currentBalance = typeof req.user.starsBalance === 'number' ? req.user.starsBalance : 0;
+              req.user.starsBalance = currentBalance + starsToAdd;
+            }
+          }
+        }
+      }
+    }
 
     req.user.tests_taken.push({ testId: test._id, score });
     await req.user.save();
