@@ -77,6 +77,8 @@ exports.showDashboard = async (req, res) => {
       messageUserIdStrings.includes(String(u._id))
     );
 
+    const unreadForAdmin = await Message.countDocuments({ from: 'user', seenByAdmin: false });
+
     res.render('admin/dashboard', {
       title: 'Admin panel',
       users: usersWithStats,
@@ -84,7 +86,8 @@ exports.showDashboard = async (req, res) => {
       tests,
       testError: req.query.testError || null,
       starSeason,
-      starRewards
+      starRewards,
+      unreadForAdmin
     });
   } catch (err) {
     console.error('Admin dashboard xatosi:', err.message);
@@ -151,7 +154,7 @@ exports.createStarReward = async (req, res) => {
 
 exports.createTest = async (req, res) => {
   try {
-    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes } = req.body;
+    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes, isStarEligible } = req.body;
 
     const total = Number(totalQuestions || 0);
     const open = Number(openCount || 0);
@@ -226,7 +229,8 @@ exports.createTest = async (req, res) => {
       openCount: open,
       answersText,
       videoLink,
-      timerMinutes: timer
+      timerMinutes: timer,
+      isStarEligible: !!isStarEligible
     });
 
     res.redirect('/admin#admin-tests');
@@ -344,7 +348,8 @@ exports.updateTest = async (req, res) => {
       openCount: open,
       answersText,
       videoLink,
-      timerMinutes: timer
+      timerMinutes: timer,
+      isStarEligible: !!isStarEligible
     });
 
     res.redirect('/admin#admin-tests');
@@ -393,6 +398,12 @@ exports.getUserMessages = async (req, res) => {
     const messages = await Message.find({ user: userId })
       .sort({ createdAt: 1 })
       .lean();
+
+    // Admin ushbu foydalanuvchi chatini ochganda, foydalanuvchidan kelgan xabarlarni o'qilgan deb belgilaymiz
+    await Message.updateMany(
+      { user: userId, from: 'user', seenByAdmin: false },
+      { $set: { seenByAdmin: true } }
+    );
 
     return res.json({ user, messages });
   } catch (err) {

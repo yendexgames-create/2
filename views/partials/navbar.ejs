@@ -12,7 +12,12 @@
         <a href="/tests">Testlar</a>
         <a href="/leaderboard">Yetakchilar</a>
         <a href="/stars">Star yig'ish uchun</a>
-        <a href="/messages">Adminga xabarlashish</a>
+        <a href="/messages" class="nav-link-with-badge">
+          Adminga xabarlashish
+          <% if (typeof unreadFromAdmin === 'number' && unreadFromAdmin > 0) { %>
+            <span class="nav-badge"><%= unreadFromAdmin %></span>
+          <% } %>
+        </a>
       <% } %>
     </nav>
 
@@ -67,7 +72,12 @@
         <span>⭐</span>
         <span><%= typeof user.starsBalance === 'number' ? user.starsBalance : 0 %> stars</span>
       </div>
-      <a href="/messages" class="nav-mobile-link">Adminga xabarlashish</a>
+      <a href="/messages" class="nav-mobile-link nav-mobile-link-with-badge">
+        <span>Adminga xabarlashish</span>
+        <% if (typeof unreadFromAdmin === 'number' && unreadFromAdmin > 0) { %>
+          <span class="nav-badge"><%= unreadFromAdmin %></span>
+        <% } %>
+      </a>
       <a href="/profile" class="nav-mobile-link">Shaxsiy kabinet</a>
       <a href="/auth/logout" class="nav-mobile-link">Chiqish</a>
     <% } else { %>

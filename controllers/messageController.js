@@ -12,6 +12,12 @@ exports.getUserThread = async (req, res) => {
       .sort({ createdAt: 1 })
       .lean();
 
+    // Foydalanuvchi chatni ochganda, admin yuborgan xabarlarni o'qilgan deb belgilaymiz
+    await Message.updateMany(
+      { user: userId, from: 'admin', seenByUser: false },
+      { $set: { seenByUser: true } }
+    );
+
     res.json({ messages });
   } catch (err) {
     console.error('getUserThread xatosi:', err.message);
@@ -40,7 +46,9 @@ exports.sendUserMessage = async (req, res) => {
       user: userId,
       from: 'user',
       text: cleanText || undefined,
-      imageUrl: cleanImage || undefined
+      imageUrl: cleanImage || undefined,
+      seenByUser: true,
+      seenByAdmin: false
     });
     // Agar oddiy forma yuborilgan bo'lsa (HTML kutayotgan bo'lsa), sahifaga qayta redirect qilamiz
     const acceptsHtml = req.headers.accept && req.headers.accept.indexOf('text/html') !== -1;

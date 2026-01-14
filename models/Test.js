@@ -16,6 +16,7 @@ const testSchema = new mongoose.Schema(
     answersText: { type: String },
     videoLink: { type: String },
     timerMinutes: { type: Number },
+    isStarEligible: { type: Boolean, default: false },
     questions: [questionSchema]
   },
   { timestamps: true }

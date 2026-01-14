@@ -35,14 +35,14 @@
           </div>
           <div class="form-group">
             <label for="timerMinutes">Timer (daqiqalarda, ixtiyoriy)</label>
-            <input
-              type="number"
-              id="timerMinutes"
-              name="timerMinutes"
-              min="0"
-              value="<%= typeof test.timerMinutes !== 'undefined' && test.timerMinutes !== null ? test.timerMinutes : '' %>"
-            />
+            <input type="number" id="timerMinutes" name="timerMinutes" min="0" value="<%= typeof test.timerMinutes === 'number' ? test.timerMinutes : '' %>" />
             <small style="display:block;font-size:12px;color:#56756a;margin-top:4px;">Agar bo'sh yoki 0 bo'lsa, bu test uchun timer ishlamaydi.</small>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" name="isStarEligible" value="1" <%= test.isStarEligible ? 'checked' : '' %> />
+              Bu testni stars uchun hisoblash (yetakchilar bo'yicha mukofot)
+            </label>
           </div>
           <div class="form-group">
             <label for="answersText">Javoblar ro'yxati</label>

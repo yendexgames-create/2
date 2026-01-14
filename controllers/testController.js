@@ -273,7 +273,7 @@ exports.submitTest = async (req, res) => {
 
     const now = new Date();
 
-    if (modeSafe === 'timed' && req.user) {
+    if (modeSafe === 'timed' && req.user && test.isStarEligible) {
       const season = await StarSeason.findOne({
         isActive: true,
         startDate: { $lte: now },

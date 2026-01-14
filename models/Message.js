@@ -19,7 +19,9 @@ const messageSchema = new mongoose.Schema(
     imageUrl: {
       type: String,
       trim: true
-    }
+    },
+    seenByUser: { type: Boolean, default: false },
+    seenByAdmin: { type: Boolean, default: false }
   },
   {
     timestamps: true

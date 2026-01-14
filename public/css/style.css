@@ -33,12 +33,12 @@ a { text-decoration: none; color: inherit; }
 }
 
 .nav-toggle-line {
-  position: absolute;
-  width: 18px;
+  display: block;
+  width: 22px;
   height: 2px;
+  background: #12372a;
   border-radius: 999px;
-  background: #0d3b2e;
-  transition: transform 0.25s ease, opacity 0.2s ease, top 0.25s ease, bottom 0.25s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
 }
 
 .nav-toggle-line:nth-child(1) { top: 10px; }

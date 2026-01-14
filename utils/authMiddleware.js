@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Message = require('../models/Message');
 
 const ensureAuth = async (req, res, next) => {
   try {
@@ -14,6 +15,13 @@ const ensureAuth = async (req, res, next) => {
     }
     req.user = user;
     res.locals.user = user;
+
+    const unreadFromAdmin = await Message.countDocuments({
+      user: user._id,
+      from: 'admin',
+      seenByUser: false
+    });
+    res.locals.unreadFromAdmin = unreadFromAdmin;
     next();
   } catch (err) {
     console.error('Auth middleware xatosi:', err.message);
@@ -32,6 +40,13 @@ const ensureAuthOptional = async (req, res, next) => {
     if (user) {
       req.user = user;
       res.locals.user = user;
+
+      const unreadFromAdmin = await Message.countDocuments({
+        user: user._id,
+        from: 'admin',
+        seenByUser: false
+      });
+      res.locals.unreadFromAdmin = unreadFromAdmin;
     }
     return next();
   } catch (err) {
