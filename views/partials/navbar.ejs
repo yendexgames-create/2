@@ -11,6 +11,7 @@
       <% if (user) { %>
         <a href="/tests">Testlar</a>
         <a href="/leaderboard">Yetakchilar</a>
+        <a href="/stars">Star yig'ish uchun</a>
         <a href="/messages">Adminga xabarlashish</a>
       <% } %>
     </nav>
@@ -21,6 +22,7 @@
         <a href="/auth/register" class="btn-primary">Ro‘yxatdan o‘tish</a>
       <% } else { %>
         <div class="nav-profile">
+          <span class="nav-stars">⭐ <%= typeof user.starsBalance === 'number' ? user.starsBalance : 0 %></span>
           <span class="nav-username"><%= user.name || 'Foydalanuvchi' %></span>
           <div class="avatar-dropdown">
             <div class="avatar-circle">
@@ -60,6 +62,11 @@
     <% if (user) { %>
       <a href="/tests" class="nav-mobile-link">Testlar</a>
       <a href="/leaderboard" class="nav-mobile-link">Yetakchilar</a>
+      <a href="/stars" class="nav-mobile-link">Star yig'ish uchun</a>
+      <div class="nav-mobile-link" style="font-weight:600;display:flex;align-items:center;gap:4px;">
+        <span>⭐</span>
+        <span><%= typeof user.starsBalance === 'number' ? user.starsBalance : 0 %> stars</span>
+      </div>
       <a href="/messages" class="nav-mobile-link">Adminga xabarlashish</a>
       <a href="/profile" class="nav-mobile-link">Shaxsiy kabinet</a>
       <a href="/auth/logout" class="nav-mobile-link">Chiqish</a>

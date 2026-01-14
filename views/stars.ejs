@@ -1,0 +1,51 @@
+<%- include('./partials/head') %>
+<%- include('./partials/navbar') %>
+
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Stars yig'ish va sovg'alar</h1>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="font-size:18px;margin-bottom:8px;">Sizning stars balansingiz</h2>
+        <p style="font-size:16px;">
+          <span style="font-size:20px;">⭐</span>
+          <strong><%= user && typeof user.starsBalance === 'number' ? user.starsBalance : 0 %></strong>
+        </p>
+        <p style="font-size:13px;color:#56756a;margin-top:4px;">
+          Vaqt bilan testlarni yechib, yetakchilar ro'yxatida yuqori o'rinlarni egallaganingizda stars to'playsiz.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:18px;margin-bottom:8px;">Mavjud sovg'alar</h2>
+        <% if (!rewards || !rewards.length) { %>
+          <p class="tests-empty">Hozircha stars evaziga olinadigan sovg'alar qo'shilmagan.</p>
+        <% } else { %>
+          <div class="admin-users-table-wrapper">
+            <table class="admin-users-table">
+              <thead>
+                <tr>
+                  <th>Sovg'a</th>
+                  <th>Ta'rif</th>
+                  <th>Stars narxi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% rewards.forEach(function(r){ %>
+                  <tr>
+                    <td><strong><%= r.title %></strong></td>
+                    <td><%= r.description || '-' %></td>
+                    <td><%= r.costStars %> ⭐</td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('./partials/footer') %>

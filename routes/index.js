@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { ensureAuthOptional, ensureAuth } = require('../utils/authMiddleware');
+const StarReward = require('../models/StarReward');
 const leaderboardController = require('../controllers/leaderboardController');
 const messageController = require('../controllers/messageController');
 const { uploadMiddleware, uploadChatImage } = require('../controllers/uploadController');
@@ -23,6 +24,21 @@ router.get('/results', ensureAuthOptional, (req, res) => {
 
 router.get('/register-course', ensureAuthOptional, (req, res) => {
   res.render('register-course', { title: 'Kursga ro‘yxatdan o‘tish' });
+});
+
+// Stars yig'ish va sovg'alar sahifasi
+router.get('/stars', ensureAuth, async (req, res) => {
+  try {
+    const rewards = await StarReward.find({ isActive: true }).sort({ costStars: 1 }).lean();
+    res.render('stars', {
+      title: 'Stars — Math Club',
+      user: req.user,
+      rewards
+    });
+  } catch (err) {
+    console.error('Stars sahifasi xatosi:', err.message);
+    res.status(500).send('Server xatosi');
+  }
 });
 
 router.get('/leaderboard', ensureAuthOptional, leaderboardController.getLeaderboard);
