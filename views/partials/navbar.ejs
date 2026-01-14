@@ -9,7 +9,6 @@
       <% if (user) { %>
         <a href="/tests">Testlar</a>
         <a href="/leaderboard">Yetakchilar</a>
-        <a href="/stars">Star yig'ish uchun</a>
         <a href="/messages" class="nav-link-with-badge">
           Adminga xabarlashish
           <% if (typeof unreadFromAdmin === 'number' && unreadFromAdmin > 0) { %>
@@ -57,6 +56,23 @@
   </div>
 </header>
 
+<% if (typeof activeStarTest !== 'undefined' && activeStarTest) { %>
+  <div class="star-banner">
+    <div class="star-banner-inner">
+      <div class="star-banner-text">
+        <strong>⭐ Stars uchun testlar ochildi!</strong>
+        <span>
+          Birinchi test: <%= activeStarTest.title %>
+          <% if (activeStarTest.starStartDate) { %>
+            — boshlanish sanasi: <%= activeStarTest.starStartDate.toLocaleDateString('uz-UZ') %>
+          <% } %>
+        </span>
+      </div>
+      <a href="/star-tests" class="btn-primary star-banner-btn">Test yechish</a>
+    </div>
+  </div>
+<% } %>
+
 <!-- Mobil menyu overlay va panel -->
 <div class="nav-mobile-overlay"></div>
 <nav class="nav-mobile" aria-hidden="true">
@@ -67,7 +83,6 @@
     <% if (user) { %>
       <a href="/tests" class="nav-mobile-link">Testlar</a>
       <a href="/leaderboard" class="nav-mobile-link">Yetakchilar</a>
-      <a href="/stars" class="nav-mobile-link">Star yig'ish uchun</a>
       <div class="nav-mobile-link" style="font-weight:600;display:flex;align-items:center;gap:4px;">
         <span>⭐</span>
         <span><%= typeof user.starsBalance === 'number' ? user.starsBalance : 0 %> stars</span>

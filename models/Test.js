@@ -17,6 +17,8 @@ const testSchema = new mongoose.Schema(
     videoLink: { type: String },
     timerMinutes: { type: Number },
     isStarEligible: { type: Boolean, default: false },
+    starStartDate: { type: Date },
+    starEndDate: { type: Date },
     questions: [questionSchema]
   },
   { timestamps: true }

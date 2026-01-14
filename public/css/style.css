@@ -11,6 +11,50 @@ a { text-decoration: none; color: inherit; }
 .nav-links a { font-size: 14px; }
 .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 
+.star-banner {
+  background: linear-gradient(90deg, #0fbf84, #0d3b2e);
+  color: #ffffff;
+}
+
+.star-banner-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.star-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.star-banner-text strong {
+  font-size: 14px;
+}
+
+.star-banner-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+@media (max-width: 720px) {
+  .star-banner-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .star-banner-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 /* Mobil hamburger menyu */
 .nav-toggle {
   display: inline-flex;

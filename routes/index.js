@@ -4,6 +4,7 @@ const { ensureAuthOptional, ensureAuth } = require('../utils/authMiddleware');
 const StarReward = require('../models/StarReward');
 const leaderboardController = require('../controllers/leaderboardController');
 const messageController = require('../controllers/messageController');
+const testController = require('../controllers/testController');
 const { uploadMiddleware, uploadChatImage } = require('../controllers/uploadController');
 
 router.get('/', ensureAuthOptional, (req, res) => {
@@ -40,6 +41,9 @@ router.get('/stars', ensureAuth, async (req, res) => {
     res.status(500).send('Server xatosi');
   }
 });
+
+// Stars uchun testlar ro'yxati sahifasi
+router.get('/star-tests', ensureAuth, testController.getStarTestsPage);
 
 router.get('/leaderboard', ensureAuthOptional, leaderboardController.getLeaderboard);
 router.get('/leaderboard/tests', ensureAuthOptional, leaderboardController.getPerTestLeaderboard);

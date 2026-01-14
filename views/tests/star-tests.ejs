@@ -1,0 +1,81 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<main class="page tests-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Stars uchun testlar</h1>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="font-size:18px;margin-bottom:6px;">Qonun-qoidalar</h2>
+        <ul style="font-size:14px;color:#275546;margin-left:18px;margin-bottom:6px;">
+          <li>Bu yerda faqat stars uchun ajratilgan maxsus testlar joylashadi.</li>
+          <li>Har bir testni <strong>faqat bir marta</strong> vaqtsiz rejimda yechishingiz mumkin.</li>
+          <li>Yopiq savollar (A/B/C/D) va ochiq savollar uchun umumiy vaqt va savollar soni ko'rsatiladi.</li>
+          <li>Vaqt bilan yechilgan (timed) urinishlar stars bo'yicha yetakchilar reytingiga ta'sir qiladi.</li>
+        </ul>
+        <p style="font-size:13px;color:#56756a;">Testni boshlashdan oldin yaxshilab tayyorlaning: qayta urinish yo'q.</p>
+      </div>
+
+      <div class="tests-layout">
+        <div class="tests-list card">
+          <h2 class="tests-list-title">Stars uchun testlar ro'yxati</h2>
+          <p class="tests-list-desc">Quyidagi ro'yxatdan bir testni tanlab, vaqtsiz (faqat bir marotaba) rejimda yeching.</p>
+
+          <div class="tests-cards">
+            <% if (tests && tests.length) { %>
+              <% tests.forEach(function(t, idx){ %>
+                <div class="test-card-btn" style="cursor:default;">
+                  <div class="test-card-rank">#<%= idx + 1 %></div>
+                  <div class="test-card-main">
+                    <div class="test-card-title"><%= t.title %></div>
+                    <div class="test-card-meta">
+                      <% if (typeof t.totalQuestions !== 'undefined' && t.totalQuestions !== null) { %>
+                        <span><%= t.totalQuestions %> ta savol
+                          <% if (typeof t.closedCount !== 'undefined' && t.closedCount !== null) { %>
+                            · <%= t.closedCount %> ta yopiq (A/B/C/D) savol
+                          <% } %>
+                        </span>
+                      <% } %>
+                      <% if (typeof t.timerMinutes === 'number' && t.timerMinutes > 0) { %>
+                        <span style="margin-left:8px;">· <%= t.timerMinutes %> daqiqa tavsiya etilgan vaqt</span>
+                      <% } %>
+                      <% if (t.starStartDate || t.starEndDate) { %>
+                        <span style="display:block;font-size:12px;color:#56756a;margin-top:2px;">
+                          Stars uchun muddat:
+                          <% if (t.starStartDate) { %>
+                            <%= t.starStartDate.toLocaleDateString('uz-UZ') %>
+                          <% } %>
+                          —
+                          <% if (t.starEndDate) { %>
+                            <%= t.starEndDate.toLocaleDateString('uz-UZ') %>
+                          <% } %>
+                        </span>
+                      <% } %>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                    <button
+                      type="button"
+                      class="btn-primary"
+                      onclick="window.location.href='/tests/<%= t._id %>?mode=once'"
+                    >
+                      Testni boshlash
+                    </button>
+                    <small style="font-size:11px;color:#b35a00;max-width:180px;text-align:right;">
+                      Diqqat: bu testni faqat <strong>bitta marta</strong> vaqtsiz rejimda yechishingiz mumkin.
+                    </small>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p class="tests-empty">Hozircha stars uchun testlar ochilmagan.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>

@@ -154,7 +154,7 @@ exports.createStarReward = async (req, res) => {
 
 exports.createTest = async (req, res) => {
   try {
-    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes, isStarEligible } = req.body;
+    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes, isStarEligible, starStartDate, starEndDate } = req.body;
 
     const total = Number(totalQuestions || 0);
     const open = Number(openCount || 0);
@@ -221,6 +221,16 @@ exports.createTest = async (req, res) => {
       }
     }
 
+    const starDates = {};
+    if (starStartDate) {
+      const d = new Date(starStartDate);
+      if (!Number.isNaN(d.getTime())) starDates.starStartDate = d;
+    }
+    if (starEndDate) {
+      const d2 = new Date(starEndDate);
+      if (!Number.isNaN(d2.getTime())) starDates.starEndDate = d2;
+    }
+
     await Test.create({
       title,
       pdfLink,
@@ -230,7 +240,8 @@ exports.createTest = async (req, res) => {
       answersText,
       videoLink,
       timerMinutes: timer,
-      isStarEligible: !!isStarEligible
+      isStarEligible: !!isStarEligible,
+      ...starDates
     });
 
     res.redirect('/admin#admin-tests');
@@ -278,7 +289,7 @@ exports.editTestForm = async (req, res) => {
 exports.updateTest = async (req, res) => {
   try {
     const testId = req.params.id;
-    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes } = req.body;
+    const { title, pdfLink, totalQuestions, openCount, answersText, videoLink, timerMinutes, isStarEligible, starStartDate, starEndDate } = req.body;
 
     const total = Number(totalQuestions || 0);
     const open = Number(openCount || 0);
@@ -340,6 +351,16 @@ exports.updateTest = async (req, res) => {
       }
     }
 
+    const starDates = {};
+    if (starStartDate) {
+      const d = new Date(starStartDate);
+      if (!Number.isNaN(d.getTime())) starDates.starStartDate = d;
+    }
+    if (starEndDate) {
+      const d2 = new Date(starEndDate);
+      if (!Number.isNaN(d2.getTime())) starDates.starEndDate = d2;
+    }
+
     await Test.findByIdAndUpdate(testId, {
       title,
       pdfLink,
@@ -349,7 +370,8 @@ exports.updateTest = async (req, res) => {
       answersText,
       videoLink,
       timerMinutes: timer,
-      isStarEligible: !!isStarEligible
+      isStarEligible: !!isStarEligible,
+      ...starDates
     });
 
     res.redirect('/admin#admin-tests');

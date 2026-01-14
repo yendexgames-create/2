@@ -165,6 +165,17 @@
                       Bu testni stars uchun hisoblash (yetakchilar bo'yicha mukofot)
                     </label>
                     <small style="display:block;font-size:12px;color:#56756a;margin-top:4px;">Faol mavsumda ushbu test bo'yicha 1/2/3-o'rin olganlarga stars beriladi.</small>
+                    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                      <div style="flex:1;min-width:140px;">
+                        <label for="starStartDate" style="font-size:12px;color:#275546;display:block;margin-bottom:2px;">Stars uchun boshlanish sanasi (ixtiyoriy)</label>
+                        <input type="date" id="starStartDate" name="starStartDate" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #d5e6df;font-size:13px;" />
+                      </div>
+                      <div style="flex:1;min-width:140px;">
+                        <label for="starEndDate" style="font-size:12px;color:#275546;display:block;margin-bottom:2px;">Stars uchun tugash sanasi (ixtiyoriy)</label>
+                        <input type="date" id="starEndDate" name="starEndDate" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #d5e6df;font-size:13px;" />
+                      </div>
+                    </div>
+                    <small style="display:block;font-size:12px;color:#56756a;margin-top:4px;">Agar sanalar berilsa, faqat shu oraliqda yechilgan timed testlar uchun stars beriladi.</small>
                   </div>
                   <div>
                     <button type="button" id="admin-tests-next" class="btn-primary">2-bosqichga o'tish</button>

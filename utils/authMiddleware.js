@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const Test = require('../models/Test');
 
 const ensureAuth = async (req, res, next) => {
   try {
@@ -22,6 +23,27 @@ const ensureAuth = async (req, res, next) => {
       seenByUser: false
     });
     res.locals.unreadFromAdmin = unreadFromAdmin;
+
+    // Aktiv starlik testni topish (banner uchun)
+    const now = new Date();
+    const activeStarTest = await Test.findOne({
+      isStarEligible: true,
+      $or: [
+        { starStartDate: { $exists: false } },
+        { starStartDate: null },
+        { starStartDate: { $lte: now } }
+      ],
+      $or: [
+        { starEndDate: { $exists: false } },
+        { starEndDate: null },
+        { starEndDate: { $gte: now } }
+      ]
+    })
+      .select('title starStartDate starEndDate timerMinutes totalQuestions')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    res.locals.activeStarTest = activeStarTest || null;
     next();
   } catch (err) {
     console.error('Auth middleware xatosi:', err.message);
@@ -48,6 +70,28 @@ const ensureAuthOptional = async (req, res, next) => {
       });
       res.locals.unreadFromAdmin = unreadFromAdmin;
     }
+
+    // Foydalanuvchi bo'lsin-bo'lmasin, aktiv starlik testni banner uchun topamiz
+    const now = new Date();
+    const activeStarTest = await Test.findOne({
+      isStarEligible: true,
+      $or: [
+        { starStartDate: { $exists: false } },
+        { starStartDate: null },
+        { starStartDate: { $lte: now } }
+      ],
+      $or: [
+        { starEndDate: { $exists: false } },
+        { starEndDate: null },
+        { starEndDate: { $gte: now } }
+      ]
+    })
+      .select('title starStartDate starEndDate timerMinutes totalQuestions')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    res.locals.activeStarTest = activeStarTest || null;
+
     return next();
   } catch (err) {
     return next();
