@@ -24,6 +24,7 @@
         <a href="/auth/login" class="btn-outline">Kirish</a>
         <a href="/auth/register" class="btn-primary">Ro‘yxatdan o‘tish</a>
       <% } else { %>
+        <!-- Desktop uchun profil + stars -->
         <div class="nav-profile">
           <span class="nav-stars">⭐ <%= typeof user.starsBalance === 'number' ? user.starsBalance : 0 %></span>
           <span class="nav-username"><%= user.name || 'Foydalanuvchi' %></span>
@@ -41,6 +42,9 @@
             </div>
           </div>
         </div>
+
+        <!-- Mobil kichik ekranlar uchun yuqori chiziqda stars -->
+        <span class="nav-stars nav-stars-mobile">⭐ <%= typeof user.starsBalance === 'number' ? user.starsBalance : 0 %></span>
       <% } %>
     </div>
 
