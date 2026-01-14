@@ -28,15 +28,21 @@ const ensureAuth = async (req, res, next) => {
     const now = new Date();
     const activeStarTest = await Test.findOne({
       isStarEligible: true,
-      $or: [
-        { starStartDate: { $exists: false } },
-        { starStartDate: null },
-        { starStartDate: { $lte: now } }
-      ],
-      $or: [
-        { starEndDate: { $exists: false } },
-        { starEndDate: null },
-        { starEndDate: { $gte: now } }
+      $and: [
+        {
+          $or: [
+            { starStartDate: { $exists: false } },
+            { starStartDate: null },
+            { starStartDate: { $lte: now } }
+          ]
+        },
+        {
+          $or: [
+            { starEndDate: { $exists: false } },
+            { starEndDate: null },
+            { starEndDate: { $gte: now } }
+          ]
+        }
       ]
     })
       .select('title starStartDate starEndDate timerMinutes totalQuestions')

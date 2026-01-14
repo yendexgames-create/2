@@ -8,45 +8,6 @@ exports.getTestPage = async (req, res) => {
     const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount timerMinutes');
 
     let userScoresByTest = {};
-
-// Stars uchun testlar ro'yxati sahifasi
-exports.getStarTestsPage = async (req, res) => {
-  try {
-    const now = new Date();
-    const query = { isStarEligible: true };
-
-    // Agar test uchun yulduzli sanalar berilgan bo'lsa, hozirgi vaqtda faol bo'lganlarini ko'rsatamiz
-    query.$and = [
-      {
-        $or: [
-          { starStartDate: { $exists: false } },
-          { starStartDate: null },
-          { starStartDate: { $lte: now } }
-        ]
-      },
-      {
-        $or: [
-          { starEndDate: { $exists: false } },
-          { starEndDate: null },
-          { starEndDate: { $gte: now } }
-        ]
-      }
-    ];
-
-    const tests = await Test.find(query)
-      .select('title totalQuestions closedCount openCount timerMinutes starStartDate starEndDate')
-      .sort({ createdAt: 1 })
-      .lean();
-
-    res.render('tests/star-tests', {
-      title: 'Stars uchun testlar — Math Club',
-      tests
-    });
-  } catch (err) {
-    console.error('Stars uchun testlar sahifasi xatosi:', err.message);
-    res.status(500).send('Server xatosi');
-  }
-};
     if (req.user) {
       const results = await Result.find({ userId: req.user._id })
         .select('testId score')
@@ -68,6 +29,45 @@ exports.getStarTestsPage = async (req, res) => {
     });
   } catch (err) {
     console.error('Test sahifa xatosi:', err.message);
+    res.status(500).send('Server xatosi');
+  }
+};
+
+// Stars uchun testlar ro'yxati sahifasi
+exports.getStarTestsPage = async (req, res) => {
+  try {
+    const now = new Date();
+    const query = {
+      isStarEligible: true,
+      $and: [
+        {
+          $or: [
+            { starStartDate: { $exists: false } },
+            { starStartDate: null },
+            { starStartDate: { $lte: now } }
+          ]
+        },
+        {
+          $or: [
+            { starEndDate: { $exists: false } },
+            { starEndDate: null },
+            { starEndDate: { $gte: now } }
+          ]
+        }
+      ]
+    };
+
+    const tests = await Test.find(query)
+      .select('title totalQuestions closedCount openCount timerMinutes starStartDate starEndDate')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    res.render('tests/star-tests', {
+      title: 'Stars uchun testlar — Math Club',
+      tests
+    });
+  } catch (err) {
+    console.error('Stars uchun testlar sahifasi xatosi:', err.message);
     res.status(500).send('Server xatosi');
   }
 };
