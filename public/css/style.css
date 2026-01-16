@@ -43,6 +43,17 @@ a { text-decoration: none; color: inherit; }
   border-radius: 999px;
 }
 
+.star-unlock-icon {
+  display: inline-block;
+  animation: starUnlock 0.7s ease-out;
+}
+
+@keyframes starUnlock {
+  0% { transform: scale(0.6) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
 @media (max-width: 720px) {
   .star-banner-inner {
     flex-direction: column;

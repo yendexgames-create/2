@@ -45,22 +45,22 @@
             </label>
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
               <div style="flex:1;min-width:140px;">
-                <label for="starStartDate" style="font-size:12px;color:#275546;display:block;margin-bottom:2px;">Stars uchun boshlanish sanasi (ixtiyoriy)</label>
+                <label for="starStartDate" style="font-size:12px;color:#275546;display:block;margin-bottom:2px;">Stars uchun boshlanish sana/vaqti (ixtiyoriy)</label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   id="starStartDate"
                   name="starStartDate"
-                  value="<%= test.starStartDate ? test.starStartDate.toISOString().slice(0,10) : '' %>"
+                  value="<%= test.starStartDate ? test.starStartDate.toISOString().slice(0,16) : '' %>"
                   style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #d5e6df;font-size:13px;"
                 />
               </div>
               <div style="flex:1;min-width:140px;">
-                <label for="starEndDate" style="font-size:12px;color:#275546;display:block;margin-bottom:2px;">Stars uchun tugash sanasi (ixtiyoriy)</label>
+                <label for="starEndDate" style="font-size:12px;color:#275546;display:block;margin-bottom:2px;">Stars uchun tugash sana/vaqti (ixtiyoriy)</label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   id="starEndDate"
                   name="starEndDate"
-                  value="<%= test.starEndDate ? test.starEndDate.toISOString().slice(0,10) : '' %>"
+                  value="<%= test.starEndDate ? test.starEndDate.toISOString().slice(0,16) : '' %>"
                   style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #d5e6df;font-size:13px;"
                 />
               </div>
@@ -85,5 +85,29 @@
     </div>
   </section>
 </main>
+
+<script>
+  (function () {
+    var starCheckbox = document.querySelector('input[name="isStarEligible"]');
+    var starStartInput = document.getElementById('starStartDate');
+    var starEndInput = document.getElementById('starEndDate');
+
+    function updateState() {
+      if (!starCheckbox || !starStartInput || !starEndInput) return;
+      var enabled = !!starCheckbox.checked;
+      starStartInput.disabled = !enabled;
+      starEndInput.disabled = !enabled;
+      if (!enabled) {
+        starStartInput.value = '';
+        starEndInput.value = '';
+      }
+    }
+
+    if (starCheckbox && starStartInput && starEndInput) {
+      updateState();
+      starCheckbox.addEventListener('change', updateState);
+    }
+  })();
+</script>
 
 <%- include('../partials/footer') %>

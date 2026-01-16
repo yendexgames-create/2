@@ -5,7 +5,7 @@ const StarTransaction = require('../models/StarTransaction');
 
 exports.getTestPage = async (req, res) => {
   try {
-    const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount timerMinutes');
+    const tests = await Test.find({}).select('title pdfLink totalQuestions closedCount openCount timerMinutes isStarEligible');
 
     let userScoresByTest = {};
     if (req.user) {
@@ -37,30 +37,16 @@ exports.getTestPage = async (req, res) => {
 exports.getStarTestsPage = async (req, res) => {
   try {
     const now = new Date();
-    const query = {
-      isStarEligible: true,
-      $and: [
-        {
-          $or: [
-            { starStartDate: { $exists: false } },
-            { starStartDate: null },
-            { starStartDate: { $lte: now } }
-          ]
-        },
-        {
-          $or: [
-            { starEndDate: { $exists: false } },
-            { starEndDate: null },
-            { starEndDate: { $gte: now } }
-          ]
-        }
-      ]
-    };
-
-    const tests = await Test.find(query)
+    const rawTests = await Test.find({ isStarEligible: true })
       .select('title totalQuestions closedCount openCount timerMinutes starStartDate starEndDate')
       .sort({ createdAt: 1 })
       .lean();
+
+    const tests = (rawTests || []).map((t) => {
+      const start = t.starStartDate ? new Date(t.starStartDate) : null;
+      const isLocked = start && start.getTime() > now.getTime();
+      return { ...t, isLocked };
+    });
 
     res.render('tests/star-tests', {
       title: 'Stars uchun testlar — Math Club',
@@ -76,7 +62,7 @@ exports.getStarTestsPage = async (req, res) => {
 exports.getTestSolvePage = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id).select(
-      'title pdfLink totalQuestions closedCount openCount videoLink timerMinutes'
+      'title pdfLink totalQuestions closedCount openCount videoLink timerMinutes isStarEligible starStartDate'
     );
     if (!test) {
       return res.status(404).render('tests/solve', {
@@ -100,7 +86,48 @@ exports.getTestSolvePage = async (req, res) => {
 
     const mode = (req.query && req.query.mode) ? String(req.query.mode) : 'timed';
 
-    if (mode === 'once' && req.user) {
+    if (test.isStarEligible && test.starStartDate) {
+      const now = new Date();
+      if (now < test.starStartDate) {
+        return res.render('tests/solve', {
+          title: test.title + ' — Testni yechish',
+          test: null,
+          error: 'Bu stars uchun test hali boshlanmagan. Belgilangan sana va vaqt kelgach testni yechishingiz mumkin.',
+          mode: 'timed'
+        });
+      }
+    }
+
+    // Stars uchun testlarda faqat timed va faqat bitta urinish
+    if (test.isStarEligible) {
+      // Har qanday once rejimini bloklaymiz
+      if (mode === 'once') {
+        return res.render('tests/solve', {
+          title: test.title + ' — Testni yechish',
+          test: null,
+          error: 'Bu stars uchun testni faqat vaqtli (timerli) rejimda va faqat bir marta yechish mumkin.',
+          mode: 'timed'
+        });
+      }
+
+      if (req.user) {
+        const existingTimed = await Result.findOne({
+          userId: req.user._id,
+          testId: test._id,
+          mode: 'timed'
+        }).lean();
+
+        if (existingTimed) {
+          return res.render('tests/solve', {
+            title: test.title + ' — Testni yechish',
+            test: null,
+            error: 'Siz bu stars uchun testni allaqachon vaqtli rejimda yechgansiz. Qayta urinish berilmaydi.',
+            mode: 'timed'
+          });
+        }
+      }
+    } else if (mode === 'once' && req.user) {
+      // Oddiy testlar uchun eski once-rejim cheklovi saqlanadi
       const existing = await Result.findOne({
         userId: req.user._id,
         testId: test._id,
@@ -191,7 +218,38 @@ exports.submitTest = async (req, res) => {
 
     const modeSafe = typeof mode === 'string' ? mode : 'timed';
 
-    if (modeSafe === 'once' && req.user) {
+    if (test.isStarEligible && test.starStartDate) {
+      const nowGuard = new Date();
+      if (nowGuard < test.starStartDate) {
+        return res.status(400).json({
+          message: 'Bu stars uchun test hali boshlanmagan. Belgilangan sana va vaqt kelgach testni yechishingiz mumkin.'
+        });
+      }
+    }
+
+    if (test.isStarEligible) {
+      // Stars uchun testlarda faqat timed va faqat bitta urinish
+      if (modeSafe === 'once') {
+        return res.status(400).json({
+          message: 'Bu stars uchun testni faqat vaqtli (timerli) rejimda yechish mumkin.'
+        });
+      }
+
+      if (modeSafe === 'timed' && req.user) {
+        const existingTimed = await Result.findOne({
+          userId: req.user._id,
+          testId: test._id,
+          mode: 'timed'
+        }).lean();
+
+        if (existingTimed) {
+          return res.status(400).json({
+            message: 'Siz bu stars uchun testni allaqachon vaqtli rejimda yechgansiz. Qayta urinish berilmaydi.'
+          });
+        }
+      }
+    } else if (modeSafe === 'once' && req.user) {
+      // Oddiy testlar uchun eski once-rejim cheklovi
       const existing = await Result.findOne({
         userId: req.user._id,
         testId: test._id,

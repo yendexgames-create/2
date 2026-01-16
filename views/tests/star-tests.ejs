@@ -9,12 +9,12 @@
       <div class="card" style="margin-bottom:16px;">
         <h2 style="font-size:18px;margin-bottom:6px;">Qonun-qoidalar</h2>
         <ul style="font-size:14px;color:#275546;margin-left:18px;margin-bottom:6px;">
-          <li>Bu yerda faqat stars uchun ajratilgan maxsus testlar joylashadi.</li>
-          <li>Har bir testni <strong>faqat bir marta</strong> vaqtsiz rejimda yechishingiz mumkin.</li>
-          <li>Yopiq savollar (A/B/C/D) va ochiq savollar uchun umumiy vaqt va savollar soni ko'rsatiladi.</li>
-          <li>Vaqt bilan yechilgan (timed) urinishlar stars bo'yicha yetakchilar reytingiga ta'sir qiladi.</li>
+          <li>Bu yerda faqat stars (yulduzlar) uchun ajratilgan maxsus testlar joylashadi.</li>
+          <li>Har bir stars uchun testni <strong>faqat bir marta</strong> va <strong>faqat vaqtli (timerli)</strong> rejimda yechishingiz mumkin.</li>
+          <li>Yopiq savollar (A/B/C/D) va ochiq savollar uchun umumiy savollar soni va timer ko'rsatiladi.</li>
+          <li>Vaqt bilan yechilgan (timed) urinishlar stars bo'yicha yetakchilar reytingiga va mukofotlarga ta'sir qiladi.</li>
         </ul>
-        <p style="font-size:13px;color:#56756a;">Testni boshlashdan oldin yaxshilab tayyorlaning: qayta urinish yo'q.</p>
+        <p style="font-size:13px;color:#56756a;">Diqqat: har bir stars testi bo'yicha faqat bitta urinish beriladi. Boshlashdan oldin tayyor ekanligingizga ishonch hosil qiling.</p>
       </div>
 
       <div class="tests-layout">
@@ -55,16 +55,33 @@
                     </div>
                   </div>
                   <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-                    <button
-                      type="button"
-                      class="btn-primary"
-                      onclick="window.location.href='/tests/<%= t._id %>?mode=once'"
-                    >
-                      Testni boshlash
-                    </button>
-                    <small style="font-size:11px;color:#b35a00;max-width:180px;text-align:right;">
-                      Diqqat: bu testni faqat <strong>bitta marta</strong> vaqtsiz rejimda yechishingiz mumkin.
-                    </small>
+                    <% if (t.isLocked) { %>
+                      <button
+                        type="button"
+                        class="btn-outline"
+                        disabled
+                        style="display:flex;align-items:center;gap:6px;opacity:0.8;cursor:not-allowed;"
+                      >
+                        <span style="font-size:16px;">🔒</span>
+                        <span>Test hali boshlanmagan</span>
+                      </button>
+                      <small style="font-size:11px;color:#b35a00;max-width:220px;text-align:right;">
+                        Belgilangan sana va vaqt kelgach qulf ochiladi va testni yechishingiz mumkin bo'ladi.
+                      </small>
+                    <% } else { %>
+                      <button
+                        type="button"
+                        class="btn-primary"
+                        onclick="window.location.href='/tests/<%= t._id %>?mode=timed'"
+                        style="display:flex;align-items:center;gap:6px;"
+                      >
+                        <span class="star-unlock-icon" style="font-size:16px;">🔓</span>
+                        <span>Testni vaqt bilan boshlash</span>
+                      </button>
+                      <small style="font-size:11px;color:#b35a00;max-width:220px;text-align:right;">
+                        Diqqat: bu stars testini faqat <strong>bitta marta</strong> vaqtli rejimda yechishingiz mumkin.
+                      </small>
+                    <% } %>
                   </div>
                 </div>
               <% }); %>

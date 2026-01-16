@@ -18,6 +18,7 @@
                   data-test-id="<%= t._id %>"
                   data-test-title="<%- t.title %>"
                   data-test-timer="<%= typeof t.timerMinutes !== 'undefined' && t.timerMinutes !== null ? t.timerMinutes : '' %>"
+                  data-test-star="<%= t.isStarEligible ? '1' : '0' %>"
                 >
                   <div class="test-card-rank">#<%= idx + 1 %></div>
                   <div class="test-card-main">
@@ -66,7 +67,7 @@
         <button type="button" id="btn-start-once" class="btn-outline" style="width:100%;">
           Vaqtsiz yechish (faqat bitta urinish)
         </button>
-        <small style="font-size:12px;color:#b35a00;">
+        <small id="test-start-warning" style="font-size:12px;color:#b35a00;">
           Agar siz testni vaqtsiz yechishni tanlasangiz, uni bir urinishning o'zidayoq yechishingiz kerak.
           Bu rejimda testni tugatgandan so'ng, shu testni qayta ocholmaysiz.
         </small>
@@ -86,27 +87,34 @@
     var timerInfoEl = document.getElementById('test-start-timer-info');
     var btnTimed = document.getElementById('btn-start-timed');
     var btnOnce = document.getElementById('btn-start-once');
+    var warningEl = document.getElementById('test-start-warning');
 
     var currentTestId = null;
     var currentHasTimer = false;
     var currentTimerMinutes = null;
+    var currentIsStar = false;
 
-    function openModal(testId, title, timerMinutes) {
+    function openModal(testId, title, timerMinutes, isStar) {
       currentTestId = testId;
       currentHasTimer = !!(timerMinutes && !Number.isNaN(Number(timerMinutes)) && Number(timerMinutes) > 0);
       currentTimerMinutes = currentHasTimer ? Number(timerMinutes) : null;
+      currentIsStar = isStar === '1';
 
       if (titleEl) {
         titleEl.textContent = title + ' — boshlash';
       }
       if (infoEl) {
-        infoEl.textContent = 'Testni qanday usulda yechmoqchisiz?';
+        if (currentIsStar) {
+          infoEl.textContent = 'Bu stars uchun maxsus test. Uni faqat vaqtli (timerli) rejimda va faqat bitta marta yechishingiz mumkin.';
+        } else {
+          infoEl.textContent = 'Testni qanday usulda yechmoqchisiz?';
+        }
       }
 
       if (timerInfoEl) {
         if (currentHasTimer) {
           timerInfoEl.style.display = 'block';
-          timerInfoEl.textContent = 'Vaqt bilan yechish rejimida sizga ' + currentTimerMinutes + ' daqiqa beriladi. Xohlasangiz testga qayta qayta kirib yechishingiz mumkin.';
+          timerInfoEl.textContent = 'Vaqt bilan yechish rejimida sizga ' + currentTimerMinutes + ' daqiqa beriladi.';
         } else {
           timerInfoEl.style.display = 'none';
           timerInfoEl.textContent = '';
@@ -115,6 +123,17 @@
 
       if (btnTimed) {
         btnTimed.style.display = currentHasTimer ? 'block' : 'none';
+      }
+
+      if (btnOnce && warningEl) {
+        if (currentIsStar) {
+          // Stars uchun: faqat timed, once tugmasi va eski ogohlantirishni yashiramiz
+          btnOnce.style.display = 'none';
+          warningEl.textContent = 'Bu stars uchun testni faqat vaqtli (timerli) rejimda va faqat bitta marta yechishingiz mumkin.';
+        } else {
+          btnOnce.style.display = 'block';
+          warningEl.textContent = 'Agar siz testni vaqtsiz yechishni tanlasangiz, uni bir urinishning o\'zidayoq yechishingiz kerak. Bu rejimda testni tugatgandan so\'ng, shu testni qayta ocholmaysiz.';
+        }
       }
 
       if (modal) {
@@ -138,7 +157,8 @@
           var id = this.getAttribute('data-test-id');
           var title = this.getAttribute('data-test-title') || 'Test';
           var timer = this.getAttribute('data-test-timer');
-          openModal(id, title, timer);
+          var isStar = this.getAttribute('data-test-star') || '0';
+          openModal(id, title, timer, isStar);
         });
       });
     }
