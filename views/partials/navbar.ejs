@@ -68,7 +68,12 @@
           <% } %>
         </span>
       </div>
-      <a href="/star-tests" class="btn-primary star-banner-btn">Test yechish</a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <a href="/star-tests" class="btn-primary star-banner-btn">Test yechish</a>
+        <a href="/star-tests/leaderboard" class="btn-outline star-banner-btn" style="background:#ffffff22;border-color:#ffffff55;color:#fff;">
+          Stars test yetakchilari
+        </a>
+      </div>
     </div>
   </div>
 <% } %>
@@ -147,3 +152,47 @@
     });
   })();
 </script>
+
+<% if (typeof starWinNotifications !== 'undefined' && starWinNotifications && starWinNotifications.length) { %>
+  <div id="starWinModal" style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);">
+    <div style="background:#ffffff;border-radius:16px;max-width:420px;width:90%;padding:20px 22px;box-shadow:0 18px 45px rgba(0,0,0,0.22);">
+      <h2 style="margin:0 0 10px;font-size:20px;color:#1a3b33;">Tabriklaymiz! 🎉</h2>
+      <p style="margin:0 0 8px;font-size:14px;color:#36544c;">
+        Stars testlari bo'yicha yangi yutuqlaringiz mavjud:
+      </p>
+      <ul style="margin:8px 0 12px;padding-left:18px;font-size:14px;color:#27453d;">
+        <% starWinNotifications.forEach(function(n) { %>
+          <li style="margin-bottom:4px;">
+            <strong><%= n.testTitle %></strong> —
+            <%= n.rank %>-o'rin, <%= n.stars %> ⭐ yutdingiz.
+          </li>
+        <% }); %>
+      </ul>
+      <p style="margin:0 0 14px;font-size:13px;color:#56756a;">
+        Stars balansingiz yangilandi. Omad tilaymiz!
+      </p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button id="closeStarWinModal" class="btn-primary" style="padding:8px 16px;font-size:14px;">Yopish</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('starWinModal');
+      var closeBtn = document.getElementById('closeStarWinModal');
+      if (!modal || !closeBtn) return;
+
+      function closeModal() {
+        modal.style.display = 'none';
+      }
+
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+<% } %>

@@ -6,7 +6,8 @@ const resultSchema = new mongoose.Schema(
     testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test', required: true },
     score: { type: Number, required: true },
     mode: { type: String, enum: ['timed', 'once'], default: 'timed' },
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
+    durationSeconds: { type: Number }
   },
   { timestamps: true }
 );

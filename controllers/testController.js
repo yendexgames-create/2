@@ -33,6 +33,84 @@ exports.getTestPage = async (req, res) => {
   }
 };
 
+// Stars uchun testlar bo'yicha yetakchilar sahifasi
+exports.getStarTestsLeaderboardPage = async (req, res) => {
+  try {
+    const now = new Date();
+    const tests = await Test.find({ isStarEligible: true })
+      .select('title totalQuestions starStartDate starEndDate')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    const selectedTestId = req.query && req.query.test ? req.query.test : null;
+    let selectedTest = null;
+    let leaderboard = [];
+
+    if (selectedTestId) {
+      selectedTest = tests.find((t) => String(t._id) === String(selectedTestId)) || null;
+
+      if (selectedTest) {
+        const rows = await Result.aggregate([
+          {
+            $match: {
+              testId: selectedTest._id,
+              mode: 'timed'
+            }
+          },
+          {
+            $group: {
+              _id: '$userId',
+              bestScore: { $max: '$score' },
+              bestDuration: { $min: '$durationSeconds' },
+              attempts: { $sum: 1 }
+            }
+          },
+          {
+            $addFields: {
+              sortDuration: { $ifNull: ['$bestDuration', 9999999] }
+            }
+          },
+          { $sort: { bestScore: -1, sortDuration: 1 } },
+          { $limit: 50 }
+        ]);
+
+        // foydalanuvchi ma'lumotlarini qo'shamiz
+        const userIds = rows.map((r) => r._id);
+        const users = await require('../models/User')
+          .find({ _id: { $in: userIds } })
+          .select('name avatar')
+          .lean();
+        const userMap = new Map(users.map((u) => [String(u._id), u]));
+
+        leaderboard = rows.map((r, idx) => {
+          const u = userMap.get(String(r._id)) || {};
+          return {
+            userId: r._id,
+            name: u.name || 'Foydalanuvchi',
+            avatar: u.avatar || null,
+            bestScore: r.bestScore,
+            bestDuration: r.bestDuration || null,
+            attempts: r.attempts,
+            rank: idx + 1
+          };
+        });
+      }
+    }
+
+    res.render('tests/star-tests-leaderboard', {
+      title: 'Stars test yetakchilari — Math Club',
+      tests,
+      selectedTest,
+      selectedTestId,
+      leaderboard,
+      now
+    });
+  } catch (err) {
+    console.error('Stars test yetakchilari sahifasi xatosi:', err.message);
+    res.status(500).send('Server xatosi');
+  }
+};
+
 // Stars uchun testlar ro'yxati sahifasi
 exports.getStarTestsPage = async (req, res) => {
   try {
@@ -212,7 +290,7 @@ exports.getTestData = async (req, res) => {
 
 exports.submitTest = async (req, res) => {
   try {
-    const { answers, openAnswers, mode } = req.body; // answers: yopiq savollar uchun, openAnswers: ochiq savollar uchun
+    const { answers, openAnswers, mode, durationSeconds } = req.body; // answers: yopiq savollar uchun, openAnswers: ochiq savollar uchun
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test topilmadi' });
 
@@ -365,7 +443,8 @@ exports.submitTest = async (req, res) => {
       userId: req.user._id,
       testId: test._id,
       score,
-      mode: modeSafe
+      mode: modeSafe,
+      durationSeconds: typeof durationSeconds === 'number' ? durationSeconds : undefined
     });
 
     const now = new Date();
@@ -400,69 +479,7 @@ exports.submitTest = async (req, res) => {
           videoLink: test.videoLink || null
         });
       }
-      const season = await StarSeason.findOne({
-        isActive: true,
-        startDate: { $lte: now },
-        endDate: { $gte: now }
-      })
-        .sort({ createdAt: -1 })
-        .lean();
-
-      if (season) {
-        const stats = await Result.aggregate([
-          {
-            $match: {
-              testId: test._id,
-              mode: 'timed',
-              createdAt: { $gte: season.startDate, $lte: season.endDate }
-            }
-          },
-          {
-            $group: {
-              _id: '$userId',
-              bestScore: { $max: '$score' }
-            }
-          },
-          { $sort: { bestScore: -1 } }
-        ]);
-
-        const rankEntryIndex = stats.findIndex((s) => String(s._id) === String(req.user._id));
-
-        if (rankEntryIndex !== -1) {
-          const rank = rankEntryIndex + 1;
-          let starsToAdd = 0;
-          if (rank === 1) starsToAdd = 3;
-          else if (rank === 2) starsToAdd = 2;
-          else if (rank === 3) starsToAdd = 1;
-
-          if (starsToAdd > 0) {
-            const already = await StarTransaction.findOne({
-              userId: req.user._id,
-              reason: 'leaderboard_rank',
-              'meta.testId': test._id,
-              'meta.seasonId': season._id,
-              'meta.rank': rank
-            }).lean();
-
-            if (!already) {
-              await StarTransaction.create({
-                userId: req.user._id,
-                amount: starsToAdd,
-                reason: 'leaderboard_rank',
-                meta: {
-                  testId: test._id,
-                  seasonId: season._id,
-                  rank,
-                  resultId: createdResult._id
-                }
-              });
-
-              const currentBalance = typeof req.user.starsBalance === 'number' ? req.user.starsBalance : 0;
-              req.user.starsBalance = currentBalance + starsToAdd;
-            }
-          }
-        }
-      }
+      // Stars uchun testlar bo'yicha yulduzlar test muddati tugaganidan keyin alohida hisoblanadi
     }
 
     req.user.tests_taken.push({ testId: test._id, score });

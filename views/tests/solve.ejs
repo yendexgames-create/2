@@ -103,6 +103,7 @@
     let currentIndex = 0;
     let timerInterval = null;
     let hasSubmitted = false;
+    var startTimeMs = Date.now();
 
     function updateProgress(current, total) {
       if (!progressBar) return;
@@ -291,10 +292,12 @@
           });
         }
 
+        var durationSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
+
         const res = await fetch('/tests/api/' + testId + '/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ answers: currentAnswers, openAnswers: openAnswers, mode: mode })
+          body: JSON.stringify({ answers: currentAnswers, openAnswers: openAnswers, mode: mode, durationSeconds: durationSeconds })
         });
         if (res.status === 401) {
           alert('Davom etish uchun login yoki ro‘yxatdan o‘ting');

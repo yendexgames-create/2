@@ -44,6 +44,8 @@ router.get('/stars', ensureAuth, async (req, res) => {
 
 // Stars uchun testlar ro'yxati sahifasi
 router.get('/star-tests', ensureAuth, testController.getStarTestsPage);
+// Stars test yetakchilari sahifasi
+router.get('/star-tests/leaderboard', ensureAuth, testController.getStarTestsLeaderboardPage);
 
 router.get('/leaderboard', ensureAuthOptional, leaderboardController.getLeaderboard);
 router.get('/leaderboard/tests', ensureAuthOptional, leaderboardController.getPerTestLeaderboard);

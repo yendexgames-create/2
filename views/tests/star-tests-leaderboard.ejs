@@ -1,0 +1,135 @@
+<%- include('../partials/head') %>
+<%- include('../partials/navbar') %>
+
+<main class="page tests-result-page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Stars test yetakchilari</h1>
+
+      <div class="tests-layout">
+        <div class="tests-list card">
+          <h2 class="tests-list-title">Stars uchun testlar</h2>
+          <p class="tests-list-desc">Chap tomondan starlik testni tanlang, o'ng tomonda shu test bo'yicha TOP ishtirokchilarni ko'rasiz.</p>
+
+          <% if (!tests || !tests.length) { %>
+            <p class="tests-empty">Hozircha stars uchun testlar mavjud emas.</p>
+          <% } else { %>
+            <div class="tests-cards">
+              <% tests.forEach(function(t){ %>
+                <a
+                  href="/star-tests/leaderboard?test=<%= t._id %>"
+                  class="test-card-btn <%= selectedTestId && String(selectedTestId) === String(t._id) ? 'test-card-selected' : '' %>"
+                >
+                  <div class="test-card-main">
+                    <div class="test-card-title"><%= t.title %></div>
+                    <div class="test-card-meta">
+                      <% if (typeof t.totalQuestions !== 'undefined' && t.totalQuestions !== null) { %>
+                        <span><%= t.totalQuestions %> ta savol</span>
+                      <% } %>
+                      <% if (t.starStartDate || t.starEndDate) { %>
+                        <span style="margin-left:8px;font-size:12px;color:#56756a;">
+                          <% if (t.starStartDate) { %>
+                            <%= t.starStartDate.toLocaleDateString('uz-UZ') %>
+                          <% } %>
+                          —
+                          <% if (t.starEndDate) { %>
+                            <%= t.starEndDate.toLocaleDateString('uz-UZ') %>
+                          <% } %>
+                        </span>
+                      <% } %>
+                    </div>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="card test-container">
+          <% if (!selectedTest) { %>
+            <p class="tests-empty">Chap tomondan stars uchun test tanlang, shu test bo'yicha TOP 3 ishtirokchini va yulduzlar taqsimotini ko'rasiz.</p>
+          <% } else { %>
+            <div class="test-header">
+              <div>
+                <div class="test-title"><%= selectedTest.title %></div>
+                <div class="test-meta">
+                  <% if (typeof selectedTest.totalQuestions !== 'undefined' && selectedTest.totalQuestions !== null) { %>
+                    <span><%= selectedTest.totalQuestions %> ta savol</span>
+                  <% } %>
+                  <% if (selectedTest.starEndDate) { %>
+                    <span style="margin-left:8px;font-size:13px;color:#56756a;">
+                      Stars mukofotlari test muddati tugaganidan keyin hisoblanadi.
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+
+            <% if (!leaderboard || !leaderboard.length) { %>
+              <p class="tests-empty">Bu stars testi bo'yicha hali vaqtli rejimda natijalar yo'q.</p>
+            <% } else { %>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Foydalanuvchi</th>
+                      <th>Eng yaxshi aniqlik</th>
+                      <th>Eng tez vaqt</th>
+                      <th>Urinishlar</th>
+                      <th>Mumkin yulduz</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% leaderboard.forEach(function(row){ %>
+                      <tr>
+                        <td><strong><%= row.rank %></strong></td>
+                        <td>
+                          <a href="/leaderboard/user/<%= row.userId %>" class="lb-user-link">
+                            <div class="lb-avatar-wrap">
+                              <div class="lb-avatar-circle">
+                                <% if (row.avatar) { %>
+                                  <img src="<%= row.avatar %>" alt="avatar" />
+                                <% } else { %>
+                                  <span><%= row.name ? row.name.charAt(0).toUpperCase() : 'M' %></span>
+                                <% } %>
+                              </div>
+                            </div>
+                            <span class="lb-name" style="margin-left:8px;"><%= row.name %></span>
+                          </a>
+                        </td>
+                        <td><strong><%= row.bestScore %>%</strong></td>
+                        <td>
+                          <% if (row.bestDuration !== null && typeof row.bestDuration !== 'undefined') { %>
+                            <% var minutes = Math.floor(row.bestDuration / 60); var seconds = row.bestDuration % 60; %>
+                            <%= minutes %> daq <%= seconds %> sek
+                          <% } else { %>
+                            -
+                          <% } %>
+                        </td>
+                        <td><%= row.attempts %> ta</td>
+                        <td>
+                          <% if (row.rank === 1) { %>
+                            3 ⭐
+                          <% } else if (row.rank === 2) { %>
+                            2 ⭐
+                          <% } else if (row.rank === 3) { %>
+                            1 ⭐
+                          <% } else { %>
+                            -
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
