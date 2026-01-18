@@ -15,7 +15,11 @@ const {
   getUserMessages,
   sendMessageToUser,
   saveStarSeason,
-  createStarReward
+  createStarReward,
+  createVideoTopic,
+  deleteVideoTopic,
+  createVideoLesson,
+  deleteVideoLesson
 } = require('../controllers/admin');
 
 // Login sahifasi
@@ -35,6 +39,12 @@ router.post('/users/:id/delete', ensureAdmin, deleteUser);
 // Stars (admin)
 router.post('/stars/season', ensureAdmin, saveStarSeason);
 router.post('/stars/rewards', ensureAdmin, createStarReward);
+
+// Video darsliklar (admin)
+router.post('/videos/topics', ensureAdmin, createVideoTopic);
+router.post('/videos/topics/:id/delete', ensureAdmin, deleteVideoTopic);
+router.post('/videos/lessons', ensureAdmin, createVideoLesson);
+router.post('/videos/lessons/:id/delete', ensureAdmin, deleteVideoLesson);
 
 // Testlarni boshqarish
 router.post('/tests', ensureAdmin, createTest);

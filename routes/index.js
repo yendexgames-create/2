@@ -3,6 +3,7 @@ const router = express.Router();
 const { ensureAuthOptional, ensureAuth } = require('../utils/authMiddleware');
 const StarReward = require('../models/StarReward');
 const leaderboardController = require('../controllers/leaderboardController');
+const videoController = require('../controllers/videoController');
 const messageController = require('../controllers/messageController');
 const testController = require('../controllers/testController');
 const { uploadMiddleware, uploadChatImage } = require('../controllers/uploadController');
@@ -26,6 +27,9 @@ router.get('/results', ensureAuthOptional, (req, res) => {
 router.get('/register-course', ensureAuthOptional, (req, res) => {
   res.render('register-course', { title: 'Kursga ro‘yxatdan o‘tish' });
 });
+
+// Video darsliklar sahifasi
+router.get('/videos', ensureAuthOptional, videoController.getVideoLessonsPage);
 
 // Stars yig'ish va sovg'alar sahifasi
 router.get('/stars', ensureAuth, async (req, res) => {

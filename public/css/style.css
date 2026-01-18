@@ -43,6 +43,149 @@ a { text-decoration: none; color: inherit; }
   border-radius: 999px;
 }
 
+/* Video darsliklar */
+.video-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.video-sidebar {
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  padding: 10px 0 10px 10px;
+  position: relative;
+  transition: max-width 0.25s ease, transform 0.25s ease;
+}
+
+.video-sidebar-toggle {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #275546;
+  cursor: pointer;
+  padding: 4px 10px 4px 4px;
+}
+
+.video-sidebar-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #e6f3ee;
+  font-size: 11px;
+}
+
+.video-sidebar-content {
+  margin-top: 6px;
+  padding-right: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.video-topic-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.video-topic-link {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 999px 0 0 999px;
+  font-size: 14px;
+  color: #1a3b33;
+  text-decoration: none;
+}
+
+.video-topic-link:hover {
+  background: #e6f3ee;
+}
+
+.video-topic-link.active {
+  background: #1e7b58;
+  color: #ffffff;
+}
+
+.video-sidebar.video-sidebar-collapsed {
+  transform: translateX(-70%);
+}
+
+.video-grid-wrapper {
+  min-height: 200px;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.video-card {
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-thumb-wrap {
+  width: 100%;
+  padding-top: 56.25%;
+  position: relative;
+}
+
+.video-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.video-card-body {
+  padding: 10px 12px 12px;
+}
+
+.video-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.video-card-btn {
+  display: inline-block;
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+@media (max-width: 840px) {
+  .video-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .video-sidebar {
+    transform: none !important;
+  }
+}
+
 .star-unlock-icon {
   display: inline-block;
   animation: starUnlock 0.7s ease-out;

@@ -4,6 +4,8 @@ const Test = require('../models/Test');
 const Message = require('../models/Message');
 const StarSeason = require('../models/StarSeason');
 const StarReward = require('../models/StarReward');
+const VideoTopic = require('../models/VideoTopic');
+const VideoLesson = require('../models/VideoLesson');
 
 
 // Admin sessiyasini tekshiruvchi middleware
@@ -12,6 +14,84 @@ exports.ensureAdmin = (req, res, next) => {
     return next();
   }
   return res.redirect('/admin/login');
+};
+
+// Video darsliklar: mavzu qo'shish
+exports.createVideoTopic = async (req, res) => {
+  try {
+    const { title, order } = req.body;
+    if (!title || !title.toString().trim()) {
+      return res.redirect('/admin#admin-videos');
+    }
+    const payload = {
+      title: title.toString().trim()
+    };
+    if (order !== undefined && order !== null && order !== '') {
+      const n = Number(order);
+      if (!Number.isNaN(n)) payload.order = n;
+    }
+    await VideoTopic.create(payload);
+    return res.redirect('/admin#admin-videos');
+  } catch (err) {
+    console.error('VideoTopic yaratish xatosi:', err.message);
+    return res.redirect('/admin#admin-videos');
+  }
+};
+
+// Video darsliklar: mavzuni o'chirish
+exports.deleteVideoTopic = async (req, res) => {
+  try {
+    const topicId = req.params.id;
+    if (!topicId) return res.redirect('/admin#admin-videos');
+    // Mavzu va unga tegishli videolarni o'chiramiz
+    await VideoLesson.deleteMany({ topic: topicId });
+    await VideoTopic.findByIdAndDelete(topicId);
+    return res.redirect('/admin#admin-videos');
+  } catch (err) {
+    console.error('VideoTopic o\'chirish xatosi:', err.message);
+    return res.redirect('/admin#admin-videos');
+  }
+};
+
+// Video darsliklar: video qo'shish
+exports.createVideoLesson = async (req, res) => {
+  try {
+    const { title, videoUrl, thumbnailUrl, topicId, order } = req.body;
+    if (!title || !videoUrl || !topicId) {
+      return res.redirect('/admin#admin-videos');
+    }
+    const payload = {
+      title: title.toString().trim(),
+      videoUrl: videoUrl.toString().trim(),
+      topic: topicId
+    };
+    if (thumbnailUrl && thumbnailUrl.toString().trim()) {
+      payload.thumbnailUrl = thumbnailUrl.toString().trim();
+    }
+    if (order !== undefined && order !== null && order !== '') {
+      const n = Number(order);
+      if (!Number.isNaN(n)) payload.order = n;
+    }
+
+    await VideoLesson.create(payload);
+    return res.redirect('/admin#admin-videos');
+  } catch (err) {
+    console.error('VideoLesson yaratish xatosi:', err.message);
+    return res.redirect('/admin#admin-videos');
+  }
+};
+
+// Video darsliklar: videoni o'chirish
+exports.deleteVideoLesson = async (req, res) => {
+  try {
+    const lessonId = req.params.id;
+    if (!lessonId) return res.redirect('/admin#admin-videos');
+    await VideoLesson.findByIdAndDelete(lessonId);
+    return res.redirect('/admin#admin-videos');
+  } catch (err) {
+    console.error('VideoLesson o\'chirish xatosi:', err.message);
+    return res.redirect('/admin#admin-videos');
+  }
 };
 
 exports.showLogin = (req, res) => {
@@ -53,6 +133,11 @@ exports.showDashboard = async (req, res) => {
     const tests = await Test.find({}).select('title createdAt').sort({ createdAt: -1 }).lean();
     const starSeason = await StarSeason.findOne({}).sort({ createdAt: -1 }).lean();
     const starRewards = await StarReward.find({}).sort({ createdAt: -1 }).lean();
+    const videoTopics = await VideoTopic.find({}).sort({ order: 1, createdAt: 1 }).lean();
+    const videoLessons = await VideoLesson.find({})
+      .populate('topic', 'title')
+      .sort({ createdAt: -1 })
+      .lean();
 
     const usersWithStats = users.map((u) => {
       const tests = Array.isArray(u.tests_taken) ? u.tests_taken : [];
@@ -87,6 +172,8 @@ exports.showDashboard = async (req, res) => {
       testError: req.query.testError || null,
       starSeason,
       starRewards,
+      videoTopics,
+      videoLessons,
       unreadForAdmin
     });
   } catch (err) {

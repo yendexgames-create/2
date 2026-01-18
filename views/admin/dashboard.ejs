@@ -27,6 +27,7 @@
             <span class="nav-badge"><%= unreadForAdmin %></span>
           <% } %>
         </a>
+        <a href="#" class="admin-nav-link" data-target="admin-videos">Video darsliklar</a>
       </nav>
 
       <div class="admin-sections">
@@ -355,6 +356,132 @@
           <% } else { %>
             <div class="admin-placeholder">Hozircha xabar yuborgan foydalanuvchi topilmadi.</div>
           <% } %>
+        </section>
+
+        <section id="admin-videos" class="admin-section-card">
+          <h2>Video darsliklar</h2>
+          <p class="admin-section-desc">
+            Bu bo'limda video darsliklar uchun mundarija (mavzular) va videolar ro'yxatini boshqarasiz.
+          </p>
+
+          <div class="admin-grid-two">
+            <div class="card">
+              <h3>Mundarija (mavzular)</h3>
+              <% if (videoTopics && videoTopics.length) { %>
+                <div class="admin-users-table-wrapper">
+                  <table class="admin-users-table">
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Tartib</th>
+                        <th>Amallar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% videoTopics.forEach(function(t){ %>
+                        <tr>
+                          <td><%= t.title %></td>
+                          <td><%= typeof t.order === 'number' ? t.order : '' %></td>
+                          <td class="admin-users-actions">
+                            <form method="POST" action="/admin/videos/topics/<%= t._id %>/delete" onsubmit="return confirm('Bu mavzuni va unga tegishli videolarni o\'chirmoqchimisiz?');">
+                              <button type="submit" class="btn-outline admin-btn-small">O'chirish</button>
+                            </form>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="admin-placeholder">Hozircha video mavzular qo'shilmagan.</div>
+              <% } %>
+
+              <form method="POST" action="/admin/videos/topics" class="form-grid" style="margin-top:12px;">
+                <div class="form-group">
+                  <label for="videoTopicTitle">Yangi mavzu nomi</label>
+                  <input type="text" id="videoTopicTitle" name="title" placeholder="Masalan: 7-sinf - Tenglamalar" />
+                </div>
+                <div class="form-group">
+                  <label for="videoTopicOrder">Tartib (ixtiyoriy)</label>
+                  <input type="number" id="videoTopicOrder" name="order" />
+                </div>
+                <div>
+                  <button type="submit" class="btn-primary">Mavzu qo'shish</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3>Videolar</h3>
+              <% if (videoLessons && videoLessons.length) { %>
+                <div class="admin-users-table-wrapper">
+                  <table class="admin-users-table">
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Mavzu</th>
+                        <th>Video link</th>
+                        <th>Tartib</th>
+                        <th>Amallar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% videoLessons.forEach(function(v){ %>
+                        <tr>
+                          <td><%= v.title %></td>
+                          <td><%= v.topic && v.topic.title ? v.topic.title : '' %></td>
+                          <td style="max-width:200px;word-break:break-all;font-size:12px;">
+                            <a href="<%= v.videoUrl %>" target="_blank" rel="noopener"><%= v.videoUrl %></a>
+                          </td>
+                          <td><%= typeof v.order === 'number' ? v.order : '' %></td>
+                          <td class="admin-users-actions">
+                            <form method="POST" action="/admin/videos/lessons/<%= v._id %>/delete" onsubmit="return confirm('Bu videoni o\'chirmoqchimisiz?');">
+                              <button type="submit" class="btn-outline admin-btn-small">O'chirish</button>
+                            </form>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="admin-placeholder">Hozircha videolar qo'shilmagan.</div>
+              <% } %>
+
+              <form method="POST" action="/admin/videos/lessons" class="form-grid" style="margin-top:12px;">
+                <div class="form-group">
+                  <label for="videoLessonTitle">Video nomi</label>
+                  <input type="text" id="videoLessonTitle" name="title" placeholder="Masalan: 1-dars — Kirish" />
+                </div>
+                <div class="form-group">
+                  <label for="videoLessonTopic">Qaysi mavzu uchun</label>
+                  <select id="videoLessonTopic" name="topicId" required>
+                    <option value="">Mavzuni tanlang</option>
+                    <% if (videoTopics && videoTopics.length) { %>
+                      <% videoTopics.forEach(function(t){ %>
+                        <option value="<%= t._id %>"><%= t.title %></option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="videoLessonUrl">Video linki (YouTube yoki Drive)</label>
+                  <input type="url" id="videoLessonUrl" name="videoUrl" placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                  <label for="videoLessonThumb">Video rasmi (thumbnail URL, ixtiyoriy)</label>
+                  <input type="url" id="videoLessonThumb" name="thumbnailUrl" placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                  <label for="videoLessonOrder">Tartib (ixtiyoriy)</label>
+                  <input type="number" id="videoLessonOrder" name="order" />
+                </div>
+                <div>
+                  <button type="submit" class="btn-primary">Video qo'shish</button>
+                </div>
+              </form>
+            </div>
+          </div>
         </section>
       </div>
     </div>

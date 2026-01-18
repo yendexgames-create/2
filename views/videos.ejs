@@ -1,0 +1,77 @@
+<%- include('./partials/head') %>
+<%- include('./partials/navbar') %>
+
+<main class="page" data-aos="fade-up">
+  <section class="section">
+    <div class="section-inner">
+      <h1 class="section-title">Video darsliklar</h1>
+
+      <div class="video-layout">
+        <aside class="video-sidebar" id="videoSidebar">
+          <button class="video-sidebar-toggle" id="videoSidebarToggle" aria-label="Mundarijani ochish/yopish">
+            <span class="video-sidebar-toggle-icon">&lt;</span>
+            <span class="video-sidebar-toggle-text">Mundarija</span>
+          </button>
+          <div class="video-sidebar-content">
+            <% if (!topics || !topics.length) { %>
+              <p class="tests-empty">Hozircha video mavzular qo'shilmagan.</p>
+            <% } else { %>
+              <ul class="video-topic-list">
+                <% topics.forEach(function(t){ %>
+                  <li>
+                    <a
+                      href="/videos?topic=<%= t._id %>"
+                      class="video-topic-link <%= selectedTopicId && String(selectedTopicId) === String(t._id) ? 'active' : '' %>"
+                    >
+                      <%= t.title %>
+                    </a>
+                  </li>
+                <% }); %>
+              </ul>
+            <% } %>
+          </div>
+        </aside>
+
+        <div class="video-grid-wrapper">
+          <% if (!lessons || !lessons.length) { %>
+            <p class="tests-empty">Bu mavzuda hali video darsliklar qo'shilmagan.</p>
+          <% } else { %>
+            <div class="video-grid">
+              <% lessons.forEach(function(v){ %>
+                <div class="video-card">
+                  <div class="video-thumb-wrap">
+                    <% if (v.thumbnailUrl) { %>
+                      <img src="<%= v.thumbnailUrl %>" alt="<%= v.title %>" class="video-thumb" />
+                    <% } else { %>
+                      <div class="video-thumb video-thumb-placeholder">
+                        <span>Video</span>
+                      </div>
+                    <% } %>
+                  </div>
+                  <div class="video-card-body">
+                    <div class="video-card-title"><%= v.title %></div>
+                    <a href="<%= v.videoUrl %>" target="_blank" rel="noopener" class="btn-primary video-card-btn">Videoni ko'rish</a>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('./partials/footer') %>
+
+<script>
+  (function () {
+    var sidebar = document.getElementById('videoSidebar');
+    var toggle = document.getElementById('videoSidebarToggle');
+    if (!sidebar || !toggle) return;
+
+    toggle.addEventListener('click', function () {
+      sidebar.classList.toggle('video-sidebar-collapsed');
+    });
+  })();
+</script>
