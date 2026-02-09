@@ -4,8 +4,6 @@ const Message = require('../models/Message');
 const Test = require('../models/Test');
 const Result = require('../models/Result');
 const StarTransaction = require('../models/StarTransaction');
-const Result = require('../models/Result');
-const StarTransaction = require('../models/StarTransaction');
 
 const ensureAuth = async (req, res, next) => {
   try {
